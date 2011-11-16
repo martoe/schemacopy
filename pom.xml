@@ -9,5 +9,10 @@
   		<artifactId>spring-jdbc</artifactId>
   		<version>3.0.6.RELEASE</version>
   	</dependency>
+  	<dependency>
+  		<groupId>org.apache.commons</groupId>
+  		<artifactId>commons-lang3</artifactId>
+  		<version>3.0.1</version>
+  	</dependency>
   </dependencies>
 </project>
