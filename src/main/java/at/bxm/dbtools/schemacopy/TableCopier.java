@@ -6,16 +6,16 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.sql.DataSource;
-
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
 public class TableCopier {
-
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private JdbcTemplate source;
 	private JdbcTemplate target;
 
@@ -27,20 +27,26 @@ public class TableCopier {
 		target = new JdbcTemplate(value);
 	}
 
-	public void copy(final String tableName, final String sortColumn) {
-		final TableData td = new TableData(100);
+	public int copy(final String tableName, final String sortColumn) {
+		final TableData td = new TableData(tableName, 100);
+		long time = System.currentTimeMillis();
 		source.query("select * from " + tableName + sortColumn != null ? " order by " + sortColumn : "", td);
 		td.flush();
+		logger.info("Table " + tableName + "copied: " + td.rowsProcessed + " datasets, "
+				+ (System.currentTimeMillis() - time) + " ms");
+		return td.rowsProcessed;
 	}
 
 	private class TableData implements RowCallbackHandler {
-
-		private String insertSql;
-		private int columnCount;
+		private final String tableName;
 		private final int batchSize;
 		private final List<Object[]> cache;
+		private String insertSql;
+		private int columnCount;
+		private int rowsProcessed = 0;
 
-		public TableData(int batchSize) {
+		public TableData(final String tableName, final int batchSize) {
+			this.tableName = tableName;
 			this.batchSize = batchSize;
 			cache = new ArrayList<Object[]>(batchSize);
 		}
@@ -71,6 +77,8 @@ public class TableCopier {
 		}
 
 		public void flush() {
+			final int count = cache.size();
+			logger.debug("Writing " + count + " datasets to " + tableName);
 			target.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 
 				public void setValues(PreparedStatement ps, int index) throws SQLException {
@@ -81,10 +89,12 @@ public class TableCopier {
 				}
 
 				public int getBatchSize() {
-					return cache.size();
+					return count;
 				}
 			});
+			rowsProcessed += count;
 			cache.clear();
 		}
 	}
+
 }
