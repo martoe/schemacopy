@@ -14,8 +14,11 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
+// TODO handle LOBs
 public class TableCopier {
+
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Logger sqlLogger = LoggerFactory.getLogger(getClass().getPackage().getName() + ".SQL");
 	private JdbcTemplate source;
 	private JdbcTemplate target;
 
@@ -29,10 +32,12 @@ public class TableCopier {
 
 	public int copy(final String tableName, final String sortColumn) {
 		final TableData td = new TableData(tableName, 100);
-		long time = System.currentTimeMillis();
-		source.query("select * from " + tableName + sortColumn != null ? " order by " + sortColumn : "", td);
+		final long time = System.currentTimeMillis();
+		final String query = "select * from " + tableName + (sortColumn != null ? " order by " + sortColumn : "");
+		sqlLogger.debug(query);
+		source.query(query, td);
 		td.flush();
-		logger.info("Table " + tableName + "copied: " + td.rowsProcessed + " datasets, "
+		logger.info("Table " + tableName + " copied: " + td.rowsProcessed + " datasets, "
 				+ (System.currentTimeMillis() - time) + " ms");
 		return td.rowsProcessed;
 	}
@@ -71,29 +76,32 @@ public class TableCopier {
 				data[i - 1] = rs.getObject(i);
 			}
 			cache.add(data);
-			if (cache.size() > batchSize) {
+			if (cache.size() >= batchSize) {
 				flush();
 			}
 		}
 
 		public void flush() {
 			final int count = cache.size();
-			logger.debug("Writing " + count + " datasets to " + tableName);
-			target.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+			if (count > 0) {
+				logger.debug("Writing " + count + " datasets to " + tableName);
+				sqlLogger.debug(insertSql);
+				target.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 
-				public void setValues(PreparedStatement ps, int index) throws SQLException {
-					Object[] row = cache.get(index);
-					for (int i = 1; i <= columnCount; i++) {
-						ps.setObject(i, row[i + 1]);
+					public void setValues(PreparedStatement ps, int index) throws SQLException {
+						Object[] row = cache.get(index);
+						for (int i = 0; i < columnCount; i++) {
+							ps.setObject(i + 1, row[i]);
+						}
 					}
-				}
 
-				public int getBatchSize() {
-					return count;
-				}
-			});
-			rowsProcessed += count;
-			cache.clear();
+					public int getBatchSize() {
+						return count;
+					}
+				});
+				rowsProcessed += count;
+				cache.clear();
+			}
 		}
 	}
 
