@@ -43,7 +43,7 @@ public class TableCopierH2Test {
 		TableCopier tc = new TableCopier();
 		tc.setSource(jtSource.getDataSource());
 		tc.setTarget(jtTarget.getDataSource());
-		tc.copy("testtable", "c_id");
+		tc.copy("testtable", null, null, null, "c_id");
 		assertEquals(datasets, jtTarget.queryForLong(COUNT_QUERY));
 	}
 
@@ -72,7 +72,7 @@ public class TableCopierH2Test {
 		TableCopier tc = new TableCopier();
 		tc.setSource(jtSource.getDataSource());
 		tc.setTarget(jtTarget.getDataSource());
-		tc.copy("lobtable", "c_id");
+		tc.copy("lobtable", null, null, null, "c_id");
 		assertEquals(datasets, jtTarget.queryForLong(LOBCOUNT_QUERY));
 	}
 
@@ -80,9 +80,9 @@ public class TableCopierH2Test {
 		JdbcTemplate database = createDatabase(databaseName);
 		database.execute("create table testtable(" +
 			"c_id number not null, " +
-			"c_text varchar(100), " +
-			"c_number number, " +
-			"c_date timestamp, " +
+			"c_text varchar(100) not null, " +
+			"c_number number not null, " +
+			"c_date timestamp not null, " +
 			"primary key (c_id))");
 		return database;
 	}
@@ -91,8 +91,8 @@ public class TableCopierH2Test {
 		JdbcTemplate database = createDatabase(databaseName);
 		database.execute("create table lobtable(" +
 			"c_id number not null, " +
-			"c_clob clob, " +
-			"c_blob blob, " +
+			"c_clob clob not null, " +
+			"c_blob blob not null, " +
 			"primary key (c_id))");
 		return database;
 	}
