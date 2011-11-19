@@ -15,7 +15,7 @@ import org.springframework.jdbc.support.lob.LobCreator;
 
 public class TableCopierH2Test {
 
-	private static final String COUNT_QUERY = "select count(1) from testtable";
+	static final String COUNT_QUERY = "select count(1) from testtable";
 	private static final String LOBCOUNT_QUERY = "select count(1) from lobtable";
 
 	@Test
@@ -76,7 +76,7 @@ public class TableCopierH2Test {
 		assertEquals(datasets, jtTarget.queryForLong(LOBCOUNT_QUERY));
 	}
 
-	private JdbcTemplate createSimpleTable(String databaseName) {
+	static JdbcTemplate createSimpleTable(String databaseName) {
 		JdbcTemplate database = createDatabase(databaseName);
 		database.execute("create table testtable(" +
 			"c_id number not null, " +
@@ -97,7 +97,7 @@ public class TableCopierH2Test {
 		return database;
 	}
 
-	private JdbcTemplate createDatabase(String name) {
+	private static JdbcTemplate createDatabase(String name) {
 		DataSource datasource = new DriverManagerDataSource("jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1", "sa", "");
 		return new JdbcTemplate(datasource);
 	}
