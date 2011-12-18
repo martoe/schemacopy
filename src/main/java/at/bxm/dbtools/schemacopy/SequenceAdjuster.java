@@ -1,23 +1,23 @@
 package at.bxm.dbtools.schemacopy;
 
+import org.springframework.dao.EmptyResultDataAccessException;
+
 public class SequenceAdjuster extends BaseCopier {
 
+	static final String CURRVALUE_QUERY = "select current_value from information_schema.sequences where upper(sequence_name)=upper(?)";
+	static final String INCREMENT_QUERY = "select increment from information_schema.sequences where upper(sequence_name)=upper(?)";
+
 	public void adjust(String sequenceName, String sourceSchemaName, String targetSchemaName) {
-		//		final String qualifiedName = sourceSchemaName != null ? sourceSchemaName + "." + sourceTableName
-		//			: sourceTableName;
-		//		int start = source.queryForInt("select next value for " + qualifiedName);
-		//		
-		//		"alter sequence X restart with Y increment by Z" 
-		//		final TableCopyTarget td = new DatabaseTableCopyTarget(target, targetTableName, targetSchemaName, 100);
-		//			final long time = System.currentTimeMillis();
-		//			final String query = "select * from " + qualifiedTableName + (sortColumn != null ? " order by " + sortColumn : "");
-		//			sqlLogger.debug(query);
-		//			source.query(query, td);
-		//			logger.info("Table " + qualifiedTableName + " copied: " + td.getRowsProcessed() + " datasets, "
-		//				+ (System.currentTimeMillis() - time) + " ms");
-		//			return td.getRowsProcessed();
-		//		}
-		// TODO implement
+		final String sourceName = sourceSchemaName != null ? sourceSchemaName + "." + sequenceName : sequenceName;
+		try {
+			final long currentValue = source.queryForLong(CURRVALUE_QUERY, sourceName);
+			final long increment = source.queryForLong(INCREMENT_QUERY, sourceName);
+			final long nextValue = currentValue + increment;
+			final String targetName = targetSchemaName != null ? targetSchemaName + "." + sequenceName : sequenceName;
+			target.execute("alter sequence " + targetName + " restart with " + nextValue + " increment by " + increment);
+		} catch (EmptyResultDataAccessException e) {
+			throw new SchemaCopyException("Sequence \"" + sourceName + "\" doesn't exist in source database");
+		}
 	}
 
 }
