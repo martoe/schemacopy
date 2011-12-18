@@ -1,3 +1,2 @@
 # tablename;primary key;sequence name 1;sequence name 2;...
 testtable;c_id
-testtable_seq;c_id;seq_test
