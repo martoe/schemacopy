@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Properties;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -19,6 +20,8 @@ public class SchemaCopyRunner {
 	private static final Logger logger = LoggerFactory.getLogger(SchemaCopyRunner.class);
 	private DataSource source;
 	private DataSource target;
+	private String sourceSchemaName;
+	private String targetSchemaName;
 	private BufferedReader csvData;
 
 	public void setSource(DataSource value) {
@@ -27,6 +30,14 @@ public class SchemaCopyRunner {
 
 	public void setTarget(DataSource value) {
 		target = value;
+	}
+
+	public void setSourceSchemaName(String value) {
+		sourceSchemaName = StringUtils.trimToNull(value);
+	}
+
+	public void setTargetSchemaName(String value) {
+		targetSchemaName = StringUtils.trimToNull(value);
 	}
 
 	public void setCsvData(BufferedReader value) {
@@ -41,7 +52,7 @@ public class SchemaCopyRunner {
 		while ((line = csvData.readLine()) != null) {
 			if (!line.startsWith("#")) {
 				String[] tokens = line.split(";");
-				tc.copy(tokens[0], null, null, null, tokens[1]);
+				tc.copy(tokens[0], sourceSchemaName, null, targetSchemaName, tokens[1]);
 			}
 		}
 	}
@@ -55,10 +66,12 @@ public class SchemaCopyRunner {
 			Properties p = new Properties();
 			p.load(is);
 			SchemaCopyRunner scr = new SchemaCopyRunner();
-			scr.setSource(new DriverManagerDataSource(p.getProperty("sourcedb.url"),
-				p.getProperty("sourcedb.username"), p.getProperty("sourcedb.password")));
-			scr.setTarget(new DriverManagerDataSource(p.getProperty("targetdb.url"),
-				p.getProperty("targetdb.username"), p.getProperty("targetdb.password")));
+			scr.setSource(new DriverManagerDataSource(p.getProperty("source.url"),
+				p.getProperty("source.username"), p.getProperty("source.password")));
+			scr.setSourceSchemaName(p.getProperty("source.schemaname"));
+			scr.setTarget(new DriverManagerDataSource(p.getProperty("target.url"),
+				p.getProperty("target.username"), p.getProperty("target.password")));
+			scr.setTargetSchemaName(p.getProperty("target.schemaname"));
 			datafile = open(p.getProperty("datafile"));
 			scr.setCsvData(new BufferedReader(new InputStreamReader(datafile)));
 			scr.run();

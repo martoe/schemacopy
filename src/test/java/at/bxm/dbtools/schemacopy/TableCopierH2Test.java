@@ -5,22 +5,20 @@ import static org.junit.Assert.*;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import javax.sql.DataSource;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobCreator;
 
-public class TableCopierH2Test {
+public class TableCopierH2Test extends H2TestBase {
 
-	static final String COUNT_QUERY = "select count(1) from testtable";
 	private static final String LOBCOUNT_QUERY = "select count(1) from lobtable";
 
 	@Test
 	public void copy() {
-		JdbcTemplate jtSource = createSimpleTable("source");
+		// GIVEN: a non-empty source table
+		jtSource = createSimpleTable("source");
 		final int datasets = 1111;
 		final PreparedStatementSetter pss = new PreparedStatementSetter() {
 			private int count = 0;
@@ -36,20 +34,24 @@ public class TableCopierH2Test {
 			jtSource.update("insert into testtable (c_id, c_text, c_number, c_date) values (?, ?, ?, ?)", pss);
 		}
 		assertEquals(datasets, jtSource.queryForLong(COUNT_QUERY));
-
-		JdbcTemplate jtTarget = createSimpleTable("target");
+		// AND: an empty target table
+		jtTarget = createSimpleTable("target");
 		assertEquals(0, jtTarget.queryForLong(COUNT_QUERY));
 
+		// WHEN: copying
 		TableCopier tc = new TableCopier();
 		tc.setSource(jtSource.getDataSource());
 		tc.setTarget(jtTarget.getDataSource());
 		tc.copy("testtable", null, null, null, "c_id");
+
+		// THEN: target table contains equal dataset count
 		assertEquals(datasets, jtTarget.queryForLong(COUNT_QUERY));
 	}
 
 	@Test
 	public void copyLob() {
-		JdbcTemplate jtSource = createLobTable("source");
+		// GIVEN: a non-empty source table with LOBs
+		jtSource = createLobTable("source");
 		final LobCreator lobCreator = new DefaultLobHandler().getLobCreator();
 		final int datasets = 1111;
 		final PreparedStatementSetter pss = new PreparedStatementSetter() {
@@ -65,26 +67,18 @@ public class TableCopierH2Test {
 			jtSource.update("insert into lobtable (c_id, c_clob, c_blob) values (?, ?, ?)", pss);
 		}
 		assertEquals(datasets, jtSource.queryForLong(LOBCOUNT_QUERY));
-
-		JdbcTemplate jtTarget = createLobTable("target");
+		// AND: an empty target table
+		jtTarget = createLobTable("target");
 		assertEquals(0, jtTarget.queryForLong(LOBCOUNT_QUERY));
 
+		// WHEN: copying
 		TableCopier tc = new TableCopier();
 		tc.setSource(jtSource.getDataSource());
 		tc.setTarget(jtTarget.getDataSource());
 		tc.copy("lobtable", null, null, null, "c_id");
-		assertEquals(datasets, jtTarget.queryForLong(LOBCOUNT_QUERY));
-	}
 
-	static JdbcTemplate createSimpleTable(String databaseName) {
-		JdbcTemplate database = createDatabase(databaseName);
-		database.execute("create table testtable(" +
-			"c_id number not null, " +
-			"c_text varchar(100) not null, " +
-			"c_number number not null, " +
-			"c_date timestamp not null, " +
-			"primary key (c_id))");
-		return database;
+		// THEN: target table contains equal dataset count
+		assertEquals(datasets, jtTarget.queryForLong(LOBCOUNT_QUERY));
 	}
 
 	private JdbcTemplate createLobTable(String databaseName) {
@@ -95,11 +89,6 @@ public class TableCopierH2Test {
 			"c_blob blob not null, " +
 			"primary key (c_id))");
 		return database;
-	}
-
-	private static JdbcTemplate createDatabase(String name) {
-		DataSource datasource = new DriverManagerDataSource("jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1", "sa", "");
-		return new JdbcTemplate(datasource);
 	}
 
 }

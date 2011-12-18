@@ -10,12 +10,12 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 
-public class SchemaCopyRunnerTest {
+public class SchemaCopyRunnerTest extends H2TestBase {
 
 	@Test
 	public void main() throws IOException {
 		// mostly cut-paste from TableCopierH2Test :(
-		JdbcTemplate jtSource = TableCopierH2Test.createSimpleTable("source");
+		JdbcTemplate jtSource = createSimpleTable("source");
 		final int datasets = 1111;
 		final PreparedStatementSetter pss = new PreparedStatementSetter() {
 			private int count = 0;
@@ -30,13 +30,13 @@ public class SchemaCopyRunnerTest {
 		for (int i = 0; i < datasets; i++) {
 			jtSource.update("insert into testtable (c_id, c_text, c_number, c_date) values (?, ?, ?, ?)", pss);
 		}
-		assertEquals(datasets, jtSource.queryForLong(TableCopierH2Test.COUNT_QUERY));
+		assertEquals(datasets, jtSource.queryForLong(COUNT_QUERY));
 
-		JdbcTemplate jtTarget = TableCopierH2Test.createSimpleTable("target");
-		assertEquals(0, jtTarget.queryForLong(TableCopierH2Test.COUNT_QUERY));
+		JdbcTemplate jtTarget = createSimpleTable("target");
+		assertEquals(0, jtTarget.queryForLong(COUNT_QUERY));
 
 		SchemaCopyRunner.main(null);
-		assertEquals(datasets, jtTarget.queryForLong(TableCopierH2Test.COUNT_QUERY));
+		assertEquals(datasets, jtTarget.queryForLong(COUNT_QUERY));
 	}
 
 }
