@@ -2,11 +2,12 @@ package at.bxm.dbtools.schemacopy;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 
-public class H2SequenceAdjuster extends BaseCopier {
+public class H2SequenceAdjuster extends BaseCopier implements SequenceAdjuster {
 
 	private static final String CURRVALUE_QUERY = "select current_value from information_schema.sequences where upper(sequence_name)=upper(?)";
 	private static final String INCREMENT_QUERY = "select increment from information_schema.sequences where upper(sequence_name)=upper(?)";
 
+	@Override
 	public void adjust(String sequenceName, String sourceSchemaName, String targetSchemaName) {
 		final String sourceName = sourceSchemaName != null ? sourceSchemaName + "." + sequenceName : sequenceName;
 		try {

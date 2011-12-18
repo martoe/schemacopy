@@ -8,10 +8,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * (2) "select last_number from user_sequences" includes cached values
  * (3) "select myseq.nextval from dual" changes the sequence
  */
-public class OracleSequenceAdjuster extends BaseCopier {
+public class OracleSequenceAdjuster extends BaseCopier implements SequenceAdjuster {
 
 	static final String INCREMENT_QUERY = "select increment_by from user_sequences where upper(sequence_name)=upper(?)";
 
+	@Override
 	public void adjust(String sequenceName, String sourceSchemaName, String targetSchemaName) {
 		final String sourceName = sourceSchemaName != null ? sourceSchemaName + "." + sequenceName : sequenceName;
 		final String targetName = targetSchemaName != null ? targetSchemaName + "." + sequenceName : sequenceName;

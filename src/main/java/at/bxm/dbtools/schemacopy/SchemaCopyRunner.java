@@ -15,13 +15,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+// TODO sequence adjuster test
+// TODO support dialect mixture
 public class SchemaCopyRunner {
 
 	private static final Logger logger = LoggerFactory.getLogger(SchemaCopyRunner.class);
 	private DataSource source;
-	private DataSource target;
 	private String sourceSchemaName;
+	private Dialect sourceDialect;
+	private DataSource target;
 	private String targetSchemaName;
+	private Dialect targetDialect;
 	private BufferedReader csvData;
 
 	public void setSource(DataSource value) {
@@ -40,12 +44,21 @@ public class SchemaCopyRunner {
 		targetSchemaName = StringUtils.trimToNull(value);
 	}
 
+	public void setSourceDialect(String value) {
+		sourceDialect = Dialect.fromString(value);
+	}
+
+	public void setTargetDialect(String value) {
+		targetDialect = Dialect.fromString(value);
+	}
+
 	public void setCsvData(BufferedReader value) {
 		csvData = value;
 	}
 
 	public void run() throws IOException {
 		TableCopier tc = new TableCopier();
+		SequenceAdjuster sa = getSequenceAdjuster();
 		tc.setSource(source);
 		tc.setTarget(target);
 		String line;
@@ -53,6 +66,9 @@ public class SchemaCopyRunner {
 			if (!line.startsWith("#")) {
 				String[] tokens = line.split(";");
 				tc.copy(tokens[0], sourceSchemaName, null, targetSchemaName, tokens[1]);
+				for (int i = 2; i < tokens.length; i++) {
+					sa.adjust(tokens[i], sourceSchemaName, targetSchemaName);
+				}
 			}
 		}
 	}
@@ -69,9 +85,11 @@ public class SchemaCopyRunner {
 			scr.setSource(new DriverManagerDataSource(p.getProperty("source.url"),
 				p.getProperty("source.username"), p.getProperty("source.password")));
 			scr.setSourceSchemaName(p.getProperty("source.schemaname"));
+			scr.setSourceDialect(p.getProperty("source.dialect"));
 			scr.setTarget(new DriverManagerDataSource(p.getProperty("target.url"),
 				p.getProperty("target.username"), p.getProperty("target.password")));
 			scr.setTargetSchemaName(p.getProperty("target.schemaname"));
+			scr.setTargetDialect(p.getProperty("target.dialect"));
 			datafile = open(p.getProperty("datafile"));
 			scr.setCsvData(new BufferedReader(new InputStreamReader(datafile)));
 			scr.run();
@@ -99,6 +117,19 @@ public class SchemaCopyRunner {
 				throw new FileNotFoundException(resource);
 			}
 		}
+	}
+
+	private SequenceAdjuster getSequenceAdjuster() {
+		if (sourceDialect != targetDialect) {
+			throw new SchemaCopyException("Dialect mismatch");
+		}
+		if (sourceDialect != null) {
+			switch (sourceDialect) {
+			case ORACLE:
+				return new OracleSequenceAdjuster();
+			}
+		}
+		return new H2SequenceAdjuster();
 	}
 
 }
