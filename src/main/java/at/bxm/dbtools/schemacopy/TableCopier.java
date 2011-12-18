@@ -1,6 +1,5 @@
 package at.bxm.dbtools.schemacopy;
 
-
 // TODO test with oracle
 public class TableCopier extends BaseCopier {
 

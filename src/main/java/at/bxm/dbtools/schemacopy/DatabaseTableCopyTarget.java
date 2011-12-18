@@ -1,6 +1,6 @@
 package at.bxm.dbtools.schemacopy;
 
-import static at.bxm.dbtools.schemacopy.TableCopier.*;
+import static at.bxm.dbtools.schemacopy.BaseCopier.*;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,6 +28,7 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 	private int rowsProcessed;
 	private final BatchPreparedStatementSetter batchSetter = new BatchPreparedStatementSetter() {
 
+		@Override
 		public void setValues(PreparedStatement ps, int index) throws SQLException {
 			Object[] row = cache.get(index);
 			for (int i = 0; i < columnCount; i++) {
@@ -35,6 +36,7 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 			}
 		}
 
+		@Override
 		public int getBatchSize() {
 			return cache.size();
 		}
@@ -54,7 +56,7 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 	}
 
 	private void setMetadata(ResultSetMetaData metadata) throws SQLException {
-		if (qualifiedTableName == null) {
+		if (qualifiedTableName == null) { // FIXME doesn't work with oracle
 			qualifiedTableName = (schemaName != null ? schemaName : metadata.getSchemaName(1))
 				+ "." + (tableName != null ? tableName : metadata.getTableName(1));
 		}
@@ -68,6 +70,7 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 		insertSql = sb.toString();
 	}
 
+	@Override
 	public void processRow(ResultSet rs) throws SQLException {
 		if (insertSql == null) {
 			setMetadata(rs.getMetaData());
@@ -77,7 +80,7 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 			data[i - 1] = rs.getObject(i);
 		}
 		cache.add(data);
-		if (cache.size() >= batchSize || rs.isLast()) {
+		if (cache.size() >= batchSize || rs.getType() != ResultSet.TYPE_FORWARD_ONLY && rs.isLast()) { // FIXME ME flush on last (ora)
 			flush();
 		}
 	}
@@ -93,6 +96,7 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 		}
 	}
 
+	@Override
 	public int getRowsProcessed() {
 		return rowsProcessed;
 	}
