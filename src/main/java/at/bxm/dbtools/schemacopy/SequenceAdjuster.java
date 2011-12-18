@@ -1,18 +1,22 @@
 package at.bxm.dbtools.schemacopy;
 
-import javax.sql.DataSource;
+public class SequenceAdjuster extends BaseCopier {
 
-import org.springframework.jdbc.core.JdbcTemplate;
-
-public class SequenceAdjuster {
-
-	private JdbcTemplate jdbcTemplate;
-
-	public void setDataSource(DataSource value) {
-		jdbcTemplate = new JdbcTemplate(value);
-	}
-
-	public void adjust(final String tableName, final String idColumn, final String sequenceName) {
+	public void adjust(String sequenceName, String sourceSchemaName, String targetSchemaName) {
+		//		final String qualifiedName = sourceSchemaName != null ? sourceSchemaName + "." + sourceTableName
+		//			: sourceTableName;
+		//		int start = source.queryForInt("select next value for " + qualifiedName);
+		//		
+		//		"alter sequence X restart with Y increment by Z" 
+		//		final TableCopyTarget td = new DatabaseTableCopyTarget(target, targetTableName, targetSchemaName, 100);
+		//			final long time = System.currentTimeMillis();
+		//			final String query = "select * from " + qualifiedTableName + (sortColumn != null ? " order by " + sortColumn : "");
+		//			sqlLogger.debug(query);
+		//			source.query(query, td);
+		//			logger.info("Table " + qualifiedTableName + " copied: " + td.getRowsProcessed() + " datasets, "
+		//				+ (System.currentTimeMillis() - time) + " ms");
+		//			return td.getRowsProcessed();
+		//		}
 		// TODO implement
 	}
 

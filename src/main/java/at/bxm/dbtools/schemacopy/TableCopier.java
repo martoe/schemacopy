@@ -1,25 +1,8 @@
 package at.bxm.dbtools.schemacopy;
 
-import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 // TODO test with oracle
-public class TableCopier {
-
-	private final Logger logger = LoggerFactory.getLogger(getClass());
-	static final Logger sqlLogger = LoggerFactory.getLogger(TableCopier.class.getPackage().getName() + ".SQL");
-	private JdbcTemplate source;
-	private JdbcTemplate target;
-
-	public void setSource(DataSource value) {
-		source = new JdbcTemplate(value);
-	}
-
-	public void setTarget(DataSource value) {
-		target = new JdbcTemplate(value);
-	}
+public class TableCopier extends BaseCopier {
 
 	/**
 	 * @param sourceTableName (required)
