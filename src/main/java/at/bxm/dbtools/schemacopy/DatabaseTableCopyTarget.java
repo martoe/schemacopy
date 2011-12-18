@@ -44,8 +44,8 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 
 	/**
 	 * @param target (required)
-	 * @param tableName (optional; defaults to the source table name)
-	 * @param schemaName (optional; defaults to the source schema name)
+	 * @param tableName (required)
+	 * @param schemaName (optional, no qualified access if missing)
 	 */
 	DatabaseTableCopyTarget(JdbcTemplate target, String tableName, String schemaName, int batchSize) {
 		this.target = target;
@@ -55,10 +55,17 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 		cache = new ArrayList<Object[]>(batchSize);
 	}
 
-	private void setMetadata(ResultSetMetaData metadata) throws SQLException {
-		if (qualifiedTableName == null) { // FIXME doesn't work with oracle
-			qualifiedTableName = (schemaName != null ? schemaName : metadata.getSchemaName(1))
-				+ "." + (tableName != null ? tableName : metadata.getTableName(1));
+	private void setMetadata(ResultSet rs) throws SQLException {
+		// rs.isLast() needs a scrollable resultset
+		if (rs.getType() == ResultSet.TYPE_FORWARD_ONLY) {
+			throw new SchemaCopyException("Resultset is not scrollable");
+		}
+		ResultSetMetaData metadata = rs.getMetaData();
+		if (qualifiedTableName == null) {
+			// metadata.getSchemaName() and metadata.getTableName() doesn't work with Oracle :(
+			//			qualifiedTableName = (schemaName != null ? schemaName : metadata.getSchemaName(1))
+			//				+ "." + (tableName != null ? tableName : metadata.getTableName(1));
+			qualifiedTableName = schemaName != null ? schemaName + "." + tableName : tableName;
 		}
 		columnCount = metadata.getColumnCount();
 		StringBuilder sb = new StringBuilder("insert into " + qualifiedTableName + "(");
@@ -73,14 +80,14 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 	@Override
 	public void processRow(ResultSet rs) throws SQLException {
 		if (insertSql == null) {
-			setMetadata(rs.getMetaData());
+			setMetadata(rs);
 		}
 		Object[] data = new Object[columnCount];
 		for (int i = 1; i <= columnCount; i++) {
 			data[i - 1] = rs.getObject(i);
 		}
 		cache.add(data);
-		if (cache.size() >= batchSize || rs.getType() != ResultSet.TYPE_FORWARD_ONLY && rs.isLast()) { // FIXME ME flush on last (ora)
+		if (cache.size() >= batchSize || rs.isLast()) {
 			flush();
 		}
 	}

@@ -4,41 +4,23 @@ import static org.junit.Assert.*;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import javax.sql.DataSource;
 import org.junit.Test;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobCreator;
 
-// FIXME work in progress
-public class TableCopierOracleTest {
+public class TableCopierOracleTest extends OracleTestBase {
 
 	private static final String TABLENAME = "lobtable";
 	private static final String LOBCOUNT_QUERY = "select count(1) from " + TABLENAME;
-	protected JdbcTemplate jtSource;
-	protected JdbcTemplate jtTarget;
-
-	// preparing Oracle XE 11g:
-	// connect system/manager
-	// alter system set processes=150 scope=spfile;
-	// [restart database]
-	// create user sourcetest identified by test default tablespace users;
-	// grant create session to sourcetest;
-	// grant create table to sourcetest;
-	// grant unlimited tablespace to sourcetest;
-	// create user targettest identified by test default tablespace users;
-	// grant create session to targettest;
-	// grant create table to targettest;
-	// grant unlimited tablespace to targettest;
 
 	//	create user targettest identified by test;
 	@Test
 	public void copyLob() {
 		// GIVEN: a non-empty source table with LOBs
-		jtSource = createLobTable("sourcetest", "test");
+		jtSource = createLobTable(USERNAME_SOURCE);
 		final LobCreator lobCreator = new DefaultLobHandler().getLobCreator();
 		final int datasets = 1111;
 		final PreparedStatementSetter pss = new PreparedStatementSetter() {
@@ -56,7 +38,7 @@ public class TableCopierOracleTest {
 		}
 		assertEquals(datasets, jtSource.queryForLong(LOBCOUNT_QUERY));
 		// AND: an empty target table
-		jtTarget = createLobTable("targettest", "test");
+		jtTarget = createLobTable(USERNAME_TARGET);
 		assertEquals(0, jtTarget.queryForLong(LOBCOUNT_QUERY));
 
 		// WHEN: copying
@@ -69,8 +51,8 @@ public class TableCopierOracleTest {
 		assertEquals(datasets, jtTarget.queryForLong(LOBCOUNT_QUERY));
 	}
 
-	private JdbcTemplate createLobTable(String username, String password) {
-		JdbcTemplate database = connect(username, password);
+	private JdbcTemplate createLobTable(String username) {
+		JdbcTemplate database = connect(username);
 		try {
 			database.execute("drop table " + TABLENAME);
 		} catch (BadSqlGrammarException ignore) {
@@ -81,11 +63,6 @@ public class TableCopierOracleTest {
 			"c_blob blob not null, " +
 			"primary key (c_id))");
 		return database;
-	}
-
-	private JdbcTemplate connect(String username, String password) {
-		DataSource datasource = new DriverManagerDataSource("jdbc:oracle:thin:@localhost:1521:XE", username, password);
-		return new JdbcTemplate(datasource);
 	}
 
 }
