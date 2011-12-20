@@ -8,4 +8,8 @@ public class SchemaCopyException extends RuntimeException {
 		super(message);
 	}
 
+	public SchemaCopyException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 }

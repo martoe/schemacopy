@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
@@ -18,25 +17,10 @@ public class TableCopierH2Test extends H2TestBase {
 	@Test
 	public void copy() {
 		// GIVEN: a non-empty source table
-		jtSource = createSimpleTable("source");
 		final int datasets = 1111;
-		final PreparedStatementSetter pss = new PreparedStatementSetter() {
-			private int count = 0;
-
-			public void setValues(PreparedStatement ps) throws SQLException {
-				ps.setInt(1, ++count);
-				ps.setString(2, "some text");
-				ps.setDouble(3, (double) count / 3);
-				ps.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-			}
-		};
-		for (int i = 0; i < datasets; i++) {
-			jtSource.update("insert into testtable (c_id, c_text, c_number, c_date) values (?, ?, ?, ?)", pss);
-		}
-		assertEquals(datasets, jtSource.queryForLong(COUNT_QUERY));
+		jtSource = createSimpleTableWithData("source", datasets);
 		// AND: an empty target table
 		jtTarget = createSimpleTable("target");
-		assertEquals(0, jtTarget.queryForLong(COUNT_QUERY));
 
 		// WHEN: copying
 		TableCopier tc = new TableCopier();
@@ -57,6 +41,7 @@ public class TableCopierH2Test extends H2TestBase {
 		final PreparedStatementSetter pss = new PreparedStatementSetter() {
 			private int count = 0;
 
+			@Override
 			public void setValues(PreparedStatement ps) throws SQLException {
 				ps.setInt(1, ++count);
 				lobCreator.setClobAsString(ps, 2, "some text");
