@@ -23,9 +23,7 @@ public class SequenceAdjusterH2Test extends TestBase {
 		//		});
 
 		// WHEN: adjusting
-		SequenceAdjuster sa = new SequenceAdjuster();
-		sa.setSource(sourceDb);
-		sa.setTarget(targetDb);
+		SequenceAdjuster sa = new SequenceAdjuster(sourceDb, targetDb);
 		sa.adjust(SEQ_NAME, null, null);
 
 		// THEN: both sequences are in sync
@@ -40,9 +38,7 @@ public class SequenceAdjusterH2Test extends TestBase {
 		targetDb = createSequence("target", 1, 2);
 
 		// WHEN: adjusting with wrong name
-		SequenceAdjuster sa = new SequenceAdjuster();
-		sa.setSource(sourceDb);
-		sa.setTarget(targetDb);
+		SequenceAdjuster sa = new SequenceAdjuster(sourceDb, targetDb);
 		sa.adjust("test", null, null);
 
 		// THEN: exception

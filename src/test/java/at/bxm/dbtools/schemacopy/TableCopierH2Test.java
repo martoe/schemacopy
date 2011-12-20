@@ -17,10 +17,8 @@ public class TableCopierH2Test extends TestBase {
 		targetDb = createSimpleTable("target");
 
 		// WHEN: copying
-		TableCopier tc = new TableCopier();
-		tc.setSource(sourceDb);
-		tc.setTarget(targetDb);
-		tc.copy("testtable", null, null, null, "c_id");
+		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		tc.copy("testtable", null, null, null);
 
 		// THEN: target table contains equal dataset count
 		assertEquals(datasets, targetDb.queryForLong(SIMPLETABLE_COUNTQUERY));
@@ -36,10 +34,8 @@ public class TableCopierH2Test extends TestBase {
 		assertEquals(0, targetDb.queryForLong(LOBTABLE_COUNTQUERY));
 
 		// WHEN: copying
-		TableCopier tc = new TableCopier();
-		tc.setSource(sourceDb);
-		tc.setTarget(targetDb);
-		tc.copy("lobtable", null, null, null, "c_id");
+		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		tc.copy("lobtable", null, null, null);
 
 		// THEN: target table contains equal dataset count
 		assertEquals(datasets, targetDb.queryForLong(LOBTABLE_COUNTQUERY));

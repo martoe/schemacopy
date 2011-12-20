@@ -7,15 +7,12 @@ public abstract class BaseCopier {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	protected static final Logger sqlLogger = LoggerFactory.getLogger(BaseCopier.class.getPackage().getName() + ".SQL");
-	protected Database source;
-	protected Database target;
+	protected final Database source;
+	protected final Database target;
 
-	public void setSource(Database value) {
-		source = value;
-	}
-
-	public void setTarget(Database value) {
-		target = value;
+	protected BaseCopier(Database source, Database target) {
+		this.source = source;
+		this.target = target;
 	}
 
 }

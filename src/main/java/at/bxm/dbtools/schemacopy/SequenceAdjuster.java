@@ -4,6 +4,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 
 public class SequenceAdjuster extends BaseCopier {
 
+	public SequenceAdjuster(Database source, Database target) {
+		super(source, target);
+	}
+
 	public final void adjust(String sequenceName, String sourceSchemaName, String targetSchemaName) {
 		final String sourceName = sourceSchemaName != null ? sourceSchemaName + "." + sequenceName : sequenceName;
 		final String targetName = targetSchemaName != null ? targetSchemaName + "." + sequenceName : sequenceName;

@@ -8,23 +8,25 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 
 public class TableCopier extends BaseCopier {
 
+	public TableCopier(Database source, Database target) {
+		super(source, target);
+	}
+
 	/**
 	 * @param sourceTableName (required)
 	 * @param sourceSchemaName (optional, no qualified access if missing)
 	 * @param targetTableName (optional, defaults to "sourceTableName")
 	 * @param targetSchemaName (optional, defaults to "sourceSchemaName")
-	 * @param sortColumn (optional)
 	 * @return the number of datasets that have been copied
 	 */
-	public int copy(String sourceTableName, String sourceSchemaName, String targetTableName, String targetSchemaName,
-		String sortColumn) {
+	public int copy(String sourceTableName, String sourceSchemaName, String targetTableName, String targetSchemaName) {
 		final TableCopyTarget td = new DatabaseTableCopyTarget(target.getTemplate(),
 			targetTableName != null ? targetTableName : sourceTableName,
 			targetSchemaName != null ? targetSchemaName : sourceSchemaName, 100);
 		final long time = System.currentTimeMillis();
 		final String qualifiedTableName = sourceSchemaName != null ? sourceSchemaName + "." + sourceTableName
 			: sourceTableName;
-		final String query = "select * from " + qualifiedTableName + (sortColumn != null ? " order by " + sortColumn : "");
+		final String query = "select * from " + qualifiedTableName;
 		sqlLogger.debug(query);
 		source.getTemplate().query(new PreparedStatementCreator() {
 

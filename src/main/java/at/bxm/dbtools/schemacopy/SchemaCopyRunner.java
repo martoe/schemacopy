@@ -11,6 +11,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -40,12 +41,8 @@ public class SchemaCopyRunner {
 	}
 
 	public void copy() {
-		TableCopier tc = new TableCopier();
-		tc.setSource(source);
-		tc.setTarget(target);
-		SequenceAdjuster sa = new SequenceAdjuster();
-		sa.setSource(source);
-		sa.setTarget(target);
+		TableCopier tc = new TableCopier(source, target);
+		SequenceAdjuster sa = new SequenceAdjuster(source, target);
 		String line;
 		BufferedReader in = null;
 		try {
@@ -53,9 +50,11 @@ public class SchemaCopyRunner {
 			while ((line = in.readLine()) != null) {
 				if (!line.startsWith("#")) {
 					String[] tokens = line.split(";");
-					tc.copy(tokens[0], source.getSchemaName(), null, target.getSchemaName(), tokens[1]);
-					for (int i = 2; i < tokens.length; i++) {
-						sa.adjust(tokens[i], source.getSchemaName(), target.getSchemaName());
+					tc.copy(tokens[0], source.getSchemaName(), null, target.getSchemaName());
+					for (int i = 1; i < tokens.length; i++) {
+						if (StringUtils.isNotBlank(tokens[i])) {
+							sa.adjust(tokens[i], source.getSchemaName(), target.getSchemaName());
+						}
 					}
 				}
 			}

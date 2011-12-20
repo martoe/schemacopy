@@ -7,14 +7,11 @@ import org.junit.Test;
 
 public class SequenceAdjusterOracleTest extends TestBase {
 
-	private Database jtSource;
-	private Database jtTarget;
-
 	@Test
 	public void adjust_new() {
 		// GIVEN: two new sequences
-		jtSource = createSequence(USERNAME_SOURCE, 10, 100);
-		jtTarget = createSequence(USERNAME_TARGET, 1, 3);
+		sourceDb = createSequence(USERNAME_SOURCE, 10, 100);
+		targetDb = createSequence(USERNAME_TARGET, 1, 3);
 
 		//		jtSource.query("select * from user_sequences", new RowCallbackHandler() {
 		//			@Override
@@ -26,33 +23,29 @@ public class SequenceAdjusterOracleTest extends TestBase {
 		//		});
 
 		// WHEN: adjusting
-		SequenceAdjuster sa = new SequenceAdjuster();
-		sa.setSource(jtSource);
-		sa.setTarget(jtTarget);
+		SequenceAdjuster sa = new SequenceAdjuster(sourceDb, targetDb);
 		sa.adjust(SEQ_NAME, null, null);
 
 		// THEN: both sequences are in sync
-		assertEquals(jtSource.queryForLong(SEQ_NEXTVALUE), jtTarget.queryForLong(SEQ_NEXTVALUE));
-		assertEquals(jtSource.queryForLong(SEQ_NEXTVALUE), jtTarget.queryForLong(SEQ_NEXTVALUE));
+		assertEquals(sourceDb.queryForLong(SEQ_NEXTVALUE), targetDb.queryForLong(SEQ_NEXTVALUE));
+		assertEquals(sourceDb.queryForLong(SEQ_NEXTVALUE), targetDb.queryForLong(SEQ_NEXTVALUE));
 	}
 
 	@Test
 	public void adjust_used() {
 		// GIVEN: two used sequences
-		jtSource = createSequence(USERNAME_SOURCE, 3, 100);
-		jtSource.queryForLong(SEQ_NEXTVALUE);
-		jtTarget = createSequence(USERNAME_TARGET, 21, 5);
-		jtTarget.queryForLong(SEQ_NEXTVALUE);
+		sourceDb = createSequence(USERNAME_SOURCE, 3, 100);
+		sourceDb.queryForLong(SEQ_NEXTVALUE);
+		targetDb = createSequence(USERNAME_TARGET, 21, 5);
+		targetDb.queryForLong(SEQ_NEXTVALUE);
 
 		// WHEN: adjusting
-		SequenceAdjuster sa = new SequenceAdjuster();
-		sa.setSource(jtSource);
-		sa.setTarget(jtTarget);
+		SequenceAdjuster sa = new SequenceAdjuster(sourceDb, targetDb);
 		sa.adjust(SEQ_NAME, null, null);
 
 		// THEN: both sequences are in sync
-		assertEquals(jtSource.queryForLong(SEQ_NEXTVALUE), jtTarget.queryForLong(SEQ_NEXTVALUE));
-		assertEquals(jtSource.queryForLong(SEQ_NEXTVALUE), jtTarget.queryForLong(SEQ_NEXTVALUE));
+		assertEquals(sourceDb.queryForLong(SEQ_NEXTVALUE), targetDb.queryForLong(SEQ_NEXTVALUE));
+		assertEquals(sourceDb.queryForLong(SEQ_NEXTVALUE), targetDb.queryForLong(SEQ_NEXTVALUE));
 	}
 
 }
