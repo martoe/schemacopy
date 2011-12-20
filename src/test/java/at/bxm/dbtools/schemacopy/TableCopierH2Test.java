@@ -82,7 +82,7 @@ public class TableCopierH2Test extends H2TestBase {
 	}
 
 	private JdbcTemplate createLobTable(String databaseName) {
-		JdbcTemplate database = createDatabase(databaseName);
+		JdbcTemplate database = createInMemoryDatabase(databaseName);
 		database.execute("create table lobtable(" +
 			"c_id number not null, " +
 			"c_clob clob not null, " +

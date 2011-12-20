@@ -52,7 +52,7 @@ public class SequenceAdjusterH2Test extends H2TestBase {
 	}
 
 	private JdbcTemplate createSequence(String databaseName, int start, int increment) {
-		JdbcTemplate database = createDatabase(databaseName);
+		JdbcTemplate database = createInMemoryDatabase(databaseName);
 		database.execute("create sequence " + SEQ_NAME + " start with " + start + " increment by " + increment);
 		assertEquals(start, database.queryForLong(SEQ_NEXTVALUE)); // move the sequence to the start value
 		return database;

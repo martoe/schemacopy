@@ -9,8 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Properties;
-import javax.sql.DataSource;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -20,54 +18,34 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 public class SchemaCopyRunner {
 
 	private static final Logger logger = LoggerFactory.getLogger(SchemaCopyRunner.class);
-	private DataSource source;
-	private String sourceSchemaName;
-	private Dialect sourceDialect;
-	private DataSource target;
-	private String targetSchemaName;
-	private Dialect targetDialect;
+	private Database source;
+	private Database target;
 	private BufferedReader csvData;
 
-	public void setSource(DataSource value) {
+	public void setSource(Database value) {
 		source = value;
 	}
 
-	public void setTarget(DataSource value) {
+	public void setTarget(Database value) {
 		target = value;
-	}
-
-	public void setSourceSchemaName(String value) {
-		sourceSchemaName = StringUtils.trimToNull(value);
-	}
-
-	public void setTargetSchemaName(String value) {
-		targetSchemaName = StringUtils.trimToNull(value);
-	}
-
-	public void setSourceDialect(String value) {
-		sourceDialect = Dialect.fromString(value);
-	}
-
-	public void setTargetDialect(String value) {
-		targetDialect = Dialect.fromString(value);
 	}
 
 	public void setCsvData(BufferedReader value) {
 		csvData = value;
 	}
 
-	public void run() throws IOException {
+	public void copy() throws IOException {
 		TableCopier tc = new TableCopier();
 		SequenceAdjuster sa = getSequenceAdjuster();
-		tc.setSource(source);
-		tc.setTarget(target);
+		tc.setSource(source.getDataSource());
+		tc.setTarget(target.getDataSource());
 		String line;
 		while ((line = csvData.readLine()) != null) {
 			if (!line.startsWith("#")) {
 				String[] tokens = line.split(";");
-				tc.copy(tokens[0], sourceSchemaName, null, targetSchemaName, tokens[1]);
+				tc.copy(tokens[0], source.getSchemaName(), null, target.getSchemaName(), tokens[1]);
 				for (int i = 2; i < tokens.length; i++) {
-					sa.adjust(tokens[i], sourceSchemaName, targetSchemaName);
+					sa.adjust(tokens[i], source.getSchemaName(), target.getSchemaName());
 				}
 			}
 		}
@@ -82,17 +60,19 @@ public class SchemaCopyRunner {
 			Properties p = new Properties();
 			p.load(is);
 			SchemaCopyRunner scr = new SchemaCopyRunner();
-			scr.setSource(new DriverManagerDataSource(p.getProperty("source.url"),
-				p.getProperty("source.username"), p.getProperty("source.password")));
-			scr.setSourceSchemaName(p.getProperty("source.schemaname"));
-			scr.setSourceDialect(p.getProperty("source.dialect"));
-			scr.setTarget(new DriverManagerDataSource(p.getProperty("target.url"),
-				p.getProperty("target.username"), p.getProperty("target.password")));
-			scr.setTargetSchemaName(p.getProperty("target.schemaname"));
-			scr.setTargetDialect(p.getProperty("target.dialect"));
+			scr.setSource(new Database(
+				new DriverManagerDataSource(p.getProperty("source.url"),
+					p.getProperty("source.username"), p.getProperty("source.password")),
+				Dialect.valueOf(p.getProperty("source.dialect")),
+				p.getProperty("source.schemaname")));
+			scr.setTarget(new Database(
+				new DriverManagerDataSource(p.getProperty("target.url"),
+					p.getProperty("target.username"), p.getProperty("target.password")),
+				Dialect.valueOf(p.getProperty("target.dialect")),
+				p.getProperty("target.schemaname")));
 			datafile = open(p.getProperty("datafile"));
 			scr.setCsvData(new BufferedReader(new InputStreamReader(datafile)));
-			scr.run();
+			scr.copy();
 		} finally {
 			if (is != null) {
 				is.close();
@@ -120,16 +100,15 @@ public class SchemaCopyRunner {
 	}
 
 	private SequenceAdjuster getSequenceAdjuster() {
-		if (sourceDialect != targetDialect) {
+		if (source.getDialect() != target.getDialect()) {
 			throw new SchemaCopyException("Dialect mismatch");
 		}
-		if (sourceDialect != null) {
-			switch (sourceDialect) {
-			case ORACLE:
-				return new OracleSequenceAdjuster();
-			}
+		switch (source.getDialect()) {
+		case ORACLE:
+			return new OracleSequenceAdjuster();
+		default: // H2
+			return new H2SequenceAdjuster();
 		}
-		return new H2SequenceAdjuster();
 	}
 
 }

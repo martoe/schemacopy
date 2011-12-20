@@ -1,5 +1,6 @@
 package at.bxm.dbtools.schemacopy;
 
+import java.io.File;
 import javax.sql.DataSource;
 import org.junit.After;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,7 +23,7 @@ public class H2TestBase {
 	}
 
 	protected final JdbcTemplate createSimpleTable(String databaseName) {
-		JdbcTemplate database = createDatabase(databaseName);
+		JdbcTemplate database = createInMemoryDatabase(databaseName);
 		database.execute("create table testtable(" +
 			"c_id number not null, " +
 			"c_text varchar(100) not null, " +
@@ -32,8 +33,14 @@ public class H2TestBase {
 		return database;
 	}
 
-	protected JdbcTemplate createDatabase(String name) {
+	protected JdbcTemplate createInMemoryDatabase(String name) {
+		// keep the database as long as the VM lives: DB_CLOSE_DELAY=-1 
 		DataSource datasource = new DriverManagerDataSource("jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1", "sa", "");
+		return new JdbcTemplate(datasource);
+	}
+
+	protected JdbcTemplate createLocalDatabase(File filename) {
+		DataSource datasource = new DriverManagerDataSource("jdbc:h2:file:" + filename.getAbsolutePath(), "sa", "");
 		return new JdbcTemplate(datasource);
 	}
 
