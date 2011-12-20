@@ -34,7 +34,7 @@ public class TableCopierMixedTest {
 		// GIVEN: a non-empty H2 table with LOBs and an empty Oracle table
 		final int datasets = 123;
 		jtSource = H2.createLobTableWithData("source", 123);
-		jtTarget = H2.createLobTable(Oracle.USERNAME_TARGET);
+		jtTarget = Oracle.createLobTable(Oracle.USERNAME_TARGET);
 
 		// WHEN: copying
 		TableCopier tc = new TableCopier();

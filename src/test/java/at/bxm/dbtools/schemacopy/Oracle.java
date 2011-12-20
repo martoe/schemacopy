@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
@@ -31,6 +33,7 @@ import org.springframework.jdbc.support.lob.LobCreator;
 // grant create sequence to targettest;
 public final class Oracle {
 
+	private static final Logger logger = LoggerFactory.getLogger(Oracle.class);
 	protected static final String USERNAME_SOURCE = "sourcetest";
 	protected static final String USERNAME_TARGET = "targettest";
 	protected static final String LOBTABLE_NAME = "lobtable";
@@ -44,14 +47,15 @@ public final class Oracle {
 	protected static JdbcTemplate createLobTable(String username) {
 		JdbcTemplate database = connect(username);
 		try {
-			database.execute("drop table " + LOBTABLE_NAME);
-		} catch (BadSqlGrammarException ignore) {
+			database.execute("truncate table " + LOBTABLE_NAME);
+		} catch (BadSqlGrammarException e) {
+			logger.info(e.getMessage() + " => " + LOBTABLE_NAME + " doesn't exist, creating it");
+			database.execute("create table " + LOBTABLE_NAME + "(" +
+				"c_id number not null, " +
+				"c_clob clob not null, " +
+				"c_blob blob not null, " +
+				"primary key (c_id))");
 		}
-		database.execute("create table " + LOBTABLE_NAME + "(" +
-			"c_id number not null, " +
-			"c_clob clob not null, " +
-			"c_blob blob not null, " +
-			"primary key (c_id))");
 		return database;
 	}
 

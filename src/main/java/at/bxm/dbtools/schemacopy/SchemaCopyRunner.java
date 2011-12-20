@@ -25,8 +25,6 @@ public class SchemaCopyRunner {
 	private String csvDataResource;
 	private String csvData;
 
-	//private String csvData;
-
 	public void setSource(Database value) {
 		source = value;
 	}

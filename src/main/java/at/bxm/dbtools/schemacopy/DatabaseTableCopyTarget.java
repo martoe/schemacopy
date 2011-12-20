@@ -2,6 +2,8 @@ package at.bxm.dbtools.schemacopy;
 
 import static at.bxm.dbtools.schemacopy.BaseCopier.*;
 
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -32,7 +34,19 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 		public void setValues(PreparedStatement ps, int index) throws SQLException {
 			Object[] row = cache.get(index);
 			for (int i = 0; i < columnCount; i++) {
-				ps.setObject(i + 1, row[i]);
+				if (row[i] instanceof Clob) {
+					Clob clobOld = (Clob)row[i];
+					Clob clobNew = ps.getConnection().createClob();
+					clobNew.setString(1, clobOld.getSubString(1, (int)clobOld.length()));
+					ps.setClob(i + 1, clobNew);
+				} else if (row[i] instanceof Blob) {
+					Blob blobOld = (Blob)row[i];
+					Blob blobNew = ps.getConnection().createBlob();
+					blobNew.setBytes(1, blobOld.getBytes(1, (int)blobOld.length()));
+					ps.setBlob(i + 1, blobNew);
+				} else {
+					ps.setObject(i + 1, row[i]);
+				}
 			}
 		}
 
