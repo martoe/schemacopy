@@ -4,18 +4,14 @@ import static at.bxm.dbtools.schemacopy.H2.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-public class SequenceAdjusterH2Test extends H2TestBase {
-
-	private static final String SEQ_NAME = "seq_test";
-	private static final String SEQ_NEXTVALUE = "select next value for " + SEQ_NAME;
+public class SequenceAdjusterH2Test extends TestBase {
 
 	@Test
 	public void adjust() {
 		// GIVEN: two sequences
-		jtSource = createSequence("source", 10, 100);
-		jtTarget = createSequence("target", 1, 2);
+		sourceDb = createSequence("source", 10, 100);
+		targetDb = createSequence("target", 1, 2);
 
 		//		jtSource.query("select * from information_schema.sequences ", new RowCallbackHandler() {
 		//			@Override
@@ -27,36 +23,29 @@ public class SequenceAdjusterH2Test extends H2TestBase {
 		//		});
 
 		// WHEN: adjusting
-		H2SequenceAdjuster sa = new H2SequenceAdjuster();
-		sa.setSource(jtSource.getDataSource());
-		sa.setTarget(jtTarget.getDataSource());
+		SequenceAdjuster sa = new SequenceAdjuster();
+		sa.setSource(sourceDb);
+		sa.setTarget(targetDb);
 		sa.adjust(SEQ_NAME, null, null);
 
 		// THEN: both sequences are in sync
-		assertEquals(jtSource.queryForLong(SEQ_NEXTVALUE), jtTarget.queryForLong(SEQ_NEXTVALUE));
-		assertEquals(jtSource.queryForLong(SEQ_NEXTVALUE), jtTarget.queryForLong(SEQ_NEXTVALUE));
+		assertEquals(sourceDb.queryForLong(SEQ_NEXTVALUE), targetDb.queryForLong(SEQ_NEXTVALUE));
+		assertEquals(sourceDb.queryForLong(SEQ_NEXTVALUE), targetDb.queryForLong(SEQ_NEXTVALUE));
 	}
 
 	@Test(expected = SchemaCopyException.class)
 	public void adjust_invalidSequenceName() {
 		// GIVEN: two sequences
-		jtSource = createSequence("source", 10, 100);
-		jtTarget = createSequence("target", 1, 2);
+		sourceDb = createSequence("source", 10, 100);
+		targetDb = createSequence("target", 1, 2);
 
 		// WHEN: adjusting with wrong name
-		H2SequenceAdjuster sa = new H2SequenceAdjuster();
-		sa.setSource(jtSource.getDataSource());
-		sa.setTarget(jtTarget.getDataSource());
+		SequenceAdjuster sa = new SequenceAdjuster();
+		sa.setSource(sourceDb);
+		sa.setTarget(targetDb);
 		sa.adjust("test", null, null);
 
 		// THEN: exception
-	}
-
-	private JdbcTemplate createSequence(String databaseName, int start, int increment) {
-		JdbcTemplate database = createInMemoryDatabase(databaseName);
-		database.execute("create sequence " + SEQ_NAME + " start with " + start + " increment by " + increment);
-		assertEquals(start, database.queryForLong(SEQ_NEXTVALUE)); // move the sequence to the start value
-		return database;
 	}
 
 }

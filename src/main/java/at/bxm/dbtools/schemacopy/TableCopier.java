@@ -18,7 +18,7 @@ public class TableCopier extends BaseCopier {
 	 */
 	public int copy(String sourceTableName, String sourceSchemaName, String targetTableName, String targetSchemaName,
 		String sortColumn) {
-		final TableCopyTarget td = new DatabaseTableCopyTarget(target,
+		final TableCopyTarget td = new DatabaseTableCopyTarget(target.getTemplate(),
 			targetTableName != null ? targetTableName : sourceTableName,
 			targetSchemaName != null ? targetSchemaName : sourceSchemaName, 100);
 		final long time = System.currentTimeMillis();
@@ -26,7 +26,7 @@ public class TableCopier extends BaseCopier {
 			: sourceTableName;
 		final String query = "select * from " + qualifiedTableName + (sortColumn != null ? " order by " + sortColumn : "");
 		sqlLogger.debug(query);
-		source.query(new PreparedStatementCreator() {
+		source.getTemplate().query(new PreparedStatementCreator() {
 
 			@Override
 			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {

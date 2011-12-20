@@ -5,10 +5,11 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /** The source or target of a cloning operation */
-public class Database {
+public class Database /*extends JdbcTemplate*/{
 	static final String LOCAL_PASSWORD = "$0mePa55w0rd";
 	static final String LOCAL_USERNAME = "schemacopy";
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -16,6 +17,7 @@ public class Database {
 	private final DataSource dataSource;
 	private final Dialect dialect;
 	private final String schemaName;
+	private final JdbcTemplate template;
 
 	/** using a "real" database */
 	public Database(DataSource dataSource, Dialect dialect, String schemaName) {
@@ -39,25 +41,42 @@ public class Database {
 		this.dataSource = dataSource;
 		this.dialect = dialect;
 		this.schemaName = StringUtils.trimToNull(schemaName);
+		template = new JdbcTemplate(dataSource);
 	}
 
 	public DataSource getDataSource() {
 		return dataSource;
 	}
 
+	public Dialect getDialect() {
+		return dialect;
+	}
+
 	public String getSchemaName() {
 		return schemaName;
 	}
 
-	public SequenceAdjuster getSequenceAdjuster() {
+	public SequenceStrategy getSequenceStrategy() {
 		switch (dialect) {
 		case ORACLE:
-			return new OracleSequenceAdjuster();
+			return new OracleSequenceStrategy(template);
 		case H2:
-			return new H2SequenceAdjuster();
+			return new H2SequenceStrategy(template);
 		default:
-			throw new IllegalArgumentException("No sequence adjuster for " + dialect);
+			throw new IllegalArgumentException("No strategy for " + dialect);
 		}
+	}
+
+	public JdbcTemplate getTemplate() {
+		return template;
+	}
+
+	public void execute(String sql) {
+		template.execute(sql);
+	}
+
+	public long queryForLong(String sql) {
+		return template.queryForLong(sql);
 	}
 
 }

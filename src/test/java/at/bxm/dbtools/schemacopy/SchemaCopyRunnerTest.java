@@ -10,33 +10,33 @@ import org.junit.Test;
 
 // TODO copy/export/import sequences
 // TODO test for mixed databases
-public class SchemaCopyRunnerTest extends H2TestBase {
+public class SchemaCopyRunnerTest extends TestBase {
 
 	@Test
 	public void main() throws IOException {
 		// GIVEN: a non-empty source table and an empty target table
 		final int datasets = 1111;
-		jtSource = createSimpleTableWithData("source", datasets);
-		jtTarget = createSimpleTable("target");
+		sourceDb = H2.createSimpleTableWithData("source", datasets);
+		targetDb = H2.createSimpleTable("target");
 
 		// WHEN: executing the programm
 		SchemaCopyRunner.main(null);
 
 		// THEN: target table contains datasets
-		assertEquals(datasets, jtTarget.queryForLong(COUNT_QUERY));
+		assertEquals(datasets, targetDb.queryForLong(H2.SIMPLETABLE_COUNTQUERY));
 	}
 
 	@Test
 	public void exportAndImport() {
 		// GIVEN: a non-empty source table
 		final int datasets = 1111;
-		jtSource = createSimpleTableWithData("source", datasets);
+		sourceDb = H2.createSimpleTableWithData("source", datasets);
 
 		// WHEN: exporting to a new file
 		SchemaCopyRunner scr = new SchemaCopyRunner();
-		scr.setSource(new Database(jtSource.getDataSource(), Dialect.H2, null));
+		scr.setSource(new Database(sourceDb.getDataSource(), Dialect.H2, null));
 		assertFalse(LOCAL_DB_FILE.exists());
-		H2.createLocalDatabase(LOCAL_DB).execute("create table testtable(" +
+		new Database(LOCAL_DB, null).execute("create table testtable(" +
 			"c_id number not null, " +
 			"c_text varchar(100) not null, " +
 			"c_number number not null, " +
@@ -50,13 +50,13 @@ public class SchemaCopyRunnerTest extends H2TestBase {
 		assertTrue(LOCAL_DB_FILE.exists());
 
 		// WHEN: importing this file to a new database
-		jtTarget = createSimpleTable("target");
+		targetDb = H2.createSimpleTable("target");
 		scr.setSource(new Database(LOCAL_DB, null));
-		scr.setTarget(new Database(jtTarget.getDataSource(), Dialect.H2, null));
+		scr.setTarget(new Database(targetDb.getDataSource(), Dialect.H2, null));
 		scr.copy();
 
 		// THEN: target table contains datasets
-		assertEquals(datasets, jtTarget.queryForLong(COUNT_QUERY));
+		assertEquals(datasets, targetDb.queryForLong(H2.SIMPLETABLE_COUNTQUERY));
 	}
 
 	private static final File LOCAL_DB = new File("test-db");

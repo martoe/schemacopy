@@ -6,43 +6,43 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 /** Test the {@link TableCopier} class for a H2 in-memory database */
-public class TableCopierH2Test extends H2TestBase {
+public class TableCopierH2Test extends TestBase {
 
 	@Test
 	public void copy() {
 		// GIVEN: a non-empty source table
 		final int datasets = 1111;
-		jtSource = createSimpleTableWithData("source", datasets);
+		sourceDb = createSimpleTableWithData("source", datasets);
 		// AND: an empty target table
-		jtTarget = createSimpleTable("target");
+		targetDb = createSimpleTable("target");
 
 		// WHEN: copying
 		TableCopier tc = new TableCopier();
-		tc.setSource(jtSource.getDataSource());
-		tc.setTarget(jtTarget.getDataSource());
+		tc.setSource(sourceDb);
+		tc.setTarget(targetDb);
 		tc.copy("testtable", null, null, null, "c_id");
 
 		// THEN: target table contains equal dataset count
-		assertEquals(datasets, jtTarget.queryForLong(COUNT_QUERY));
+		assertEquals(datasets, targetDb.queryForLong(SIMPLETABLE_COUNTQUERY));
 	}
 
 	@Test
 	public void copyLob() {
 		// GIVEN: a non-empty source table with LOBs
 		final int datasets = 1111;
-		jtSource = createLobTableWithData("source", datasets);
+		sourceDb = createLobTableWithData("source", datasets);
 		// AND: an empty target table
-		jtTarget = createLobTable("target");
-		assertEquals(0, jtTarget.queryForLong(LOBTABLE_COUNTQUERY));
+		targetDb = createLobTable("target");
+		assertEquals(0, targetDb.queryForLong(LOBTABLE_COUNTQUERY));
 
 		// WHEN: copying
 		TableCopier tc = new TableCopier();
-		tc.setSource(jtSource.getDataSource());
-		tc.setTarget(jtTarget.getDataSource());
+		tc.setSource(sourceDb);
+		tc.setTarget(targetDb);
 		tc.copy("lobtable", null, null, null, "c_id");
 
 		// THEN: target table contains equal dataset count
-		assertEquals(datasets, jtTarget.queryForLong(LOBTABLE_COUNTQUERY));
+		assertEquals(datasets, targetDb.queryForLong(LOBTABLE_COUNTQUERY));
 	}
 
 }

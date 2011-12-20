@@ -8,7 +8,6 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.BadSqlGrammarException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
@@ -38,14 +37,16 @@ public final class Oracle {
 	protected static final String USERNAME_TARGET = "targettest";
 	protected static final String LOBTABLE_NAME = "lobtable";
 	protected static final String LOBTABLE_COUNTQUERY = "select count(1) from " + LOBTABLE_NAME;
+	protected static final String SEQ_NAME = "seq_test";
+	protected static final String SEQ_NEXTVALUE = "select " + SEQ_NAME + ".nextval from dual";
 
-	protected static JdbcTemplate connect(String username) {
+	protected static Database connect(String username) {
 		DataSource datasource = new DriverManagerDataSource("jdbc:oracle:thin:@localhost:1521:XE", username, "test");
-		return new JdbcTemplate(datasource);
+		return new Database(datasource, Dialect.ORACLE, null);
 	}
 
-	protected static JdbcTemplate createLobTable(String username) {
-		JdbcTemplate database = connect(username);
+	protected static Database createLobTable(String username) {
+		Database database = connect(username);
 		try {
 			database.execute("truncate table " + LOBTABLE_NAME);
 		} catch (BadSqlGrammarException e) {
@@ -59,8 +60,8 @@ public final class Oracle {
 		return database;
 	}
 
-	protected static JdbcTemplate createLobTableWithData(String username, int datasets) {
-		JdbcTemplate database = createLobTable(USERNAME_SOURCE);
+	protected static Database createLobTableWithData(String username, int datasets) {
+		Database database = createLobTable(USERNAME_SOURCE);
 		final LobCreator lobCreator = new DefaultLobHandler().getLobCreator();
 		final PreparedStatementSetter pss = new PreparedStatementSetter() {
 			private int count = 0;
@@ -73,9 +74,22 @@ public final class Oracle {
 			}
 		};
 		for (int i = 0; i < datasets; i++) {
-			database.update("insert into " + LOBTABLE_NAME + " (c_id, c_clob, c_blob) values (?, ?, ?)", pss);
+			database.getTemplate().update("insert into " + LOBTABLE_NAME + " (c_id, c_clob, c_blob) values (?, ?, ?)", pss);
 		}
 		assertEquals(datasets, database.queryForLong(LOBTABLE_COUNTQUERY));
+		return database;
+	}
+
+	protected static Database createSequence(String username, int start, int increment) {
+		Database database = connect(username);
+		try {
+			database.execute("drop sequence " + SEQ_NAME);
+		} catch (BadSqlGrammarException ignore) {
+		}
+		database.execute("create sequence " + SEQ_NAME + " start with " + start + " increment by " + increment);
+		//database.execute("select next value for " + SEQ_NAME); // move the sequence to the start value
+		//		assertEquals(start, database.queryForLong(SequenceAdjuster.CURRVALUE_QUERY, SEQ_NAME));
+		//		assertEquals(increment, database.queryForLong(SequenceAdjuster.INCREMENT_QUERY, SEQ_NAME));
 		return database;
 	}
 

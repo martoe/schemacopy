@@ -15,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-// TODO sequence adjuster test
-// TODO support dialect mixture
 public class SchemaCopyRunner {
 
 	private static final Logger logger = LoggerFactory.getLogger(SchemaCopyRunner.class);
@@ -43,9 +41,11 @@ public class SchemaCopyRunner {
 
 	public void copy() {
 		TableCopier tc = new TableCopier();
-		SequenceAdjuster sa = source.getSequenceAdjuster();
-		tc.setSource(source.getDataSource());
-		tc.setTarget(target.getDataSource());
+		tc.setSource(source);
+		tc.setTarget(target);
+		SequenceAdjuster sa = new SequenceAdjuster();
+		sa.setSource(source);
+		sa.setTarget(target);
 		String line;
 		BufferedReader in = null;
 		try {

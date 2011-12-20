@@ -3,13 +3,12 @@ package at.bxm.dbtools.schemacopy;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /** Test the {@link TableCopier} class between H2 and Oracle databases */
-public class TableCopierMixedTest {
+public class TableCopierMixedTest extends TestBase {
 
-	private JdbcTemplate jtSource;
-	private JdbcTemplate jtTarget;
+	private Database jtSource;
+	private Database jtTarget;
 
 	//	create user targettest identified by test;
 	@Test
@@ -21,8 +20,8 @@ public class TableCopierMixedTest {
 
 		// WHEN: copying
 		TableCopier tc = new TableCopier();
-		tc.setSource(jtSource.getDataSource());
-		tc.setTarget(jtTarget.getDataSource());
+		tc.setSource(jtSource);
+		tc.setTarget(jtTarget);
 		tc.copy(Oracle.LOBTABLE_NAME, null, null, null, "c_id");
 
 		// THEN: target table contains equal dataset count
@@ -38,8 +37,8 @@ public class TableCopierMixedTest {
 
 		// WHEN: copying
 		TableCopier tc = new TableCopier();
-		tc.setSource(jtSource.getDataSource());
-		tc.setTarget(jtTarget.getDataSource());
+		tc.setSource(jtSource);
+		tc.setTarget(jtTarget);
 		tc.copy(Oracle.LOBTABLE_NAME, null, null, null, "c_id");
 
 		// THEN: target table contains equal dataset count
