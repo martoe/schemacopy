@@ -45,7 +45,7 @@ public class SchemaCopyRunner {
 
 	public void copy() {
 		TableCopier tc = new TableCopier();
-		SequenceAdjuster sa = getSequenceAdjuster();
+		SequenceAdjuster sa = source.getSequenceAdjuster();
 		tc.setSource(source.getDataSource());
 		tc.setTarget(target.getDataSource());
 		String line;
@@ -125,18 +125,6 @@ public class SchemaCopyRunner {
 			} else {
 				throw new FileNotFoundException(resource);
 			}
-		}
-	}
-
-	private SequenceAdjuster getSequenceAdjuster() {
-		if (source.getDialect() != target.getDialect()) {
-			throw new SchemaCopyException("Dialect mismatch");
-		}
-		switch (source.getDialect()) {
-		case ORACLE:
-			return new OracleSequenceAdjuster();
-		default: // H2
-			return new H2SequenceAdjuster();
 		}
 	}
 

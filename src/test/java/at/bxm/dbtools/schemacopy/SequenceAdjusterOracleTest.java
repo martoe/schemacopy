@@ -1,5 +1,6 @@
 package at.bxm.dbtools.schemacopy;
 
+import static at.bxm.dbtools.schemacopy.Oracle.*;
 import static org.junit.Assert.*;
 
 import java.sql.ResultSet;
@@ -9,10 +10,12 @@ import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
-public class SequenceAdjusterOracleTest extends OracleTestBase {
+public class SequenceAdjusterOracleTest {
 
 	private static final String SEQ_NAME = "seq_test";
 	private static final String SEQ_NEXTVALUE = "select " + SEQ_NAME + ".nextval from dual";
+	private JdbcTemplate jtSource;
+	private JdbcTemplate jtTarget;
 
 	@Test
 	public void adjust_new() {

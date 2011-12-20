@@ -8,6 +8,8 @@ import org.h2.engine.Constants;
 import org.junit.After;
 import org.junit.Test;
 
+// TODO copy/export/import sequences
+// TODO test for mixed databases
 public class SchemaCopyRunnerTest extends H2TestBase {
 
 	@Test
@@ -34,7 +36,7 @@ public class SchemaCopyRunnerTest extends H2TestBase {
 		SchemaCopyRunner scr = new SchemaCopyRunner();
 		scr.setSource(new Database(jtSource.getDataSource(), Dialect.H2, null));
 		assertFalse(LOCAL_DB_FILE.exists());
-		createLocalDatabase(LOCAL_DB).execute("create table testtable(" +
+		H2.createLocalDatabase(LOCAL_DB).execute("create table testtable(" +
 			"c_id number not null, " +
 			"c_text varchar(100) not null, " +
 			"c_number number not null, " +

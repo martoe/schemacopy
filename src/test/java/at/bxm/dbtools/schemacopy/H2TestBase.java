@@ -1,16 +1,14 @@
 package at.bxm.dbtools.schemacopy;
 
+import static at.bxm.dbtools.schemacopy.H2.*;
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import javax.sql.DataSource;
 import org.junit.After;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 public class H2TestBase {
 
@@ -57,18 +55,6 @@ public class H2TestBase {
 		}
 		assertEquals(datasets, datasource.queryForLong(COUNT_QUERY));
 		return datasource;
-	}
-
-	protected JdbcTemplate createInMemoryDatabase(String name) {
-		// keep the database as long as the VM lives: DB_CLOSE_DELAY=-1 
-		DataSource datasource = new DriverManagerDataSource("jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1", "sa", "");
-		return new JdbcTemplate(datasource);
-	}
-
-	protected JdbcTemplate createLocalDatabase(File filename) {
-		DataSource datasource = new DriverManagerDataSource("jdbc:h2:file:" + filename.getAbsolutePath(),
-			Database.LOCAL_USERNAME, Database.LOCAL_PASSWORD);
-		return new JdbcTemplate(datasource);
 	}
 
 }

@@ -1,5 +1,6 @@
 package at.bxm.dbtools.schemacopy;
 
+import static at.bxm.dbtools.schemacopy.H2.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;

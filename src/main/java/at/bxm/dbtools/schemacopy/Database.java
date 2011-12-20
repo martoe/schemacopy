@@ -45,12 +45,19 @@ public class Database {
 		return dataSource;
 	}
 
-	public Dialect getDialect() {
-		return dialect;
-	}
-
 	public String getSchemaName() {
 		return schemaName;
+	}
+
+	public SequenceAdjuster getSequenceAdjuster() {
+		switch (dialect) {
+		case ORACLE:
+			return new OracleSequenceAdjuster();
+		case H2:
+			return new H2SequenceAdjuster();
+		default:
+			throw new IllegalArgumentException("No sequence adjuster for " + dialect);
+		}
 	}
 
 }
