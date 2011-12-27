@@ -17,9 +17,11 @@ public class TableCopier extends BaseCopier {
 	 * @param sourceSchemaName (optional, no qualified access if missing)
 	 * @param targetTableName (optional, defaults to "sourceTableName")
 	 * @param targetSchemaName (optional, defaults to "sourceSchemaName")
+	 * @param mode (required) 
 	 * @return the number of datasets that have been copied
 	 */
-	public int copy(String sourceTableName, String sourceSchemaName, String targetTableName, String targetSchemaName) {
+	public int copy(String sourceTableName, String sourceSchemaName, String targetTableName, String targetSchemaName,
+		CopyTargetMode mode) {
 		final TableCopyTarget td = new DatabaseTableCopyTarget(target.getTemplate(),
 			targetTableName != null ? targetTableName : sourceTableName,
 			targetSchemaName != null ? targetSchemaName : sourceSchemaName, 100);

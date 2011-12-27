@@ -40,7 +40,7 @@ public class SchemaCopyRunner {
 		csvDataResource = value;
 	}
 
-	public void copy() {
+	public void copy(CopyTargetMode mode) {
 		TableCopier tc = new TableCopier(source, target);
 		SequenceAdjuster sa = new SequenceAdjuster(source, target);
 		String line;
@@ -50,7 +50,7 @@ public class SchemaCopyRunner {
 			while ((line = in.readLine()) != null) {
 				if (!line.startsWith("#")) {
 					String[] tokens = line.split(";");
-					tc.copy(tokens[0], source.getSchemaName(), null, target.getSchemaName());
+					tc.copy(tokens[0], source.getSchemaName(), null, target.getSchemaName(), mode);
 					for (int i = 1; i < tokens.length; i++) {
 						if (StringUtils.isNotBlank(tokens[i])) {
 							sa.adjust(tokens[i], source.getSchemaName(), target.getSchemaName());
@@ -90,7 +90,7 @@ public class SchemaCopyRunner {
 				Dialect.valueOf(p.getProperty("target.dialect")),
 				p.getProperty("target.schemaname")));
 			scr.setCsvDataResource(p.getProperty("datafile"));
-			scr.copy();
+			scr.copy(CopyTargetMode.valueOf(p.getProperty("copymode").toUpperCase()));
 		} finally {
 			if (is != null) {
 				is.close();

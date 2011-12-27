@@ -12,6 +12,9 @@ import org.junit.Test;
 // TODO test for mixed databases
 public class SchemaCopyRunnerTest extends TestBase {
 
+	private static final File LOCAL_DB = new File("test-db");
+	private static final File LOCAL_DB_FILE = new File(LOCAL_DB.getAbsolutePath() + Constants.SUFFIX_PAGE_FILE);
+
 	@Test
 	public void main() throws IOException {
 		// GIVEN: a non-empty source table and an empty target table
@@ -36,31 +39,22 @@ public class SchemaCopyRunnerTest extends TestBase {
 		SchemaCopyRunner scr = new SchemaCopyRunner();
 		scr.setSource(new Database(sourceDb.getDataSource(), Dialect.H2, null));
 		assertFalse(LOCAL_DB_FILE.exists());
-		new Database(LOCAL_DB, null).execute("create table testtable(" +
-			"c_id number not null, " +
-			"c_text varchar(100) not null, " +
-			"c_number number not null, " +
-			"c_date timestamp not null, " +
-			"primary key (c_id))"); // FIXME remove this (create the table automatically)
 		scr.setTarget(new Database(LOCAL_DB, null));
 		scr.setCsvData("testtable;c_id");
-		scr.copy();
+		scr.copy(CopyTargetMode.CREATE);
 
 		// THEN: the file has been written
 		assertTrue(LOCAL_DB_FILE.exists());
 
-		// WHEN: importing this file to a new database
+		// WHEN: importing this file to another database
 		targetDb = H2.createSimpleTable("target");
 		scr.setSource(new Database(LOCAL_DB, null));
 		scr.setTarget(new Database(targetDb.getDataSource(), Dialect.H2, null));
-		scr.copy();
+		scr.copy(CopyTargetMode.REUSE);
 
 		// THEN: target table contains datasets
 		assertEquals(datasets, targetDb.queryForLong(H2.SIMPLETABLE_COUNTQUERY));
 	}
-
-	private static final File LOCAL_DB = new File("test-db");
-	private static final File LOCAL_DB_FILE = new File(LOCAL_DB.getAbsolutePath() + Constants.SUFFIX_PAGE_FILE);
 
 	@After
 	public void tearDown() {
