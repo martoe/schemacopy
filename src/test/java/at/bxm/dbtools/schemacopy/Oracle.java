@@ -50,17 +50,12 @@ public final class Oracle {
 
 	protected static Database createSimpleTable(String databaseName) {
 		Database database = connect(databaseName);
-		try {
-			database.execute("truncate table " + TABLE_NAME); // FIXME better to clean up after test
-		} catch (BadSqlGrammarException e) {
-			logger.info(e.getMessage() + " => " + TABLE_NAME + " doesn't exist, creating it");
-			database.execute("create table " + TABLE_NAME + "(" +
-				"c_id number not null, " +
-				"c_text varchar2(100) not null, " +
-				"c_number number(16,2) not null, " +
-				"c_date timestamp not null, " +
-				"primary key (c_id))");
-		}
+		database.execute("create table " + TABLE_NAME + "(" +
+			"c_id number not null, " +
+			"c_text varchar2(100) not null, " +
+			"c_number number(16,2) not null, " +
+			"c_date timestamp not null, " +
+			"primary key (c_id))");
 		return database;
 	}
 
@@ -87,16 +82,11 @@ public final class Oracle {
 
 	protected static Database createLobTable(String username) {
 		Database database = connect(username);
-		try {
-			database.execute("truncate table " + LOBTABLE_NAME); // FIXME better to clean up after test
-		} catch (BadSqlGrammarException e) {
-			logger.info(e.getMessage() + " => " + LOBTABLE_NAME + " doesn't exist, creating it");
-			database.execute("create table " + LOBTABLE_NAME + "(" +
-				"c_id number not null, " +
-				"c_clob clob not null, " +
-				"c_blob blob not null, " +
-				"primary key (c_id))");
-		}
+		database.execute("create table " + LOBTABLE_NAME + "(" +
+			"c_id number not null, " +
+			"c_clob clob not null, " +
+			"c_blob blob not null, " +
+			"primary key (c_id))");
 		return database;
 	}
 
@@ -131,6 +121,14 @@ public final class Oracle {
 		//		assertEquals(start, database.queryForLong(SequenceAdjuster.CURRVALUE_QUERY, SEQ_NAME));
 		//		assertEquals(increment, database.queryForLong(SequenceAdjuster.INCREMENT_QUERY, SEQ_NAME));
 		return database;
+	}
+
+	protected static void dropTable(Database database, String tableName) {
+		try {
+			database.execute("drop table " + tableName);
+		} catch (BadSqlGrammarException ignore) {
+			logger.info("Could not drop table " + tableName + " - maybe it doesn't exist");
+		}
 	}
 
 }

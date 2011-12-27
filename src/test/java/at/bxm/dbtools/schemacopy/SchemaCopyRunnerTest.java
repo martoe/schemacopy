@@ -9,7 +9,6 @@ import org.junit.After;
 import org.junit.Test;
 
 // TODO copy/export/import sequences
-// TODO test for mixed databases
 public class SchemaCopyRunnerTest extends TestBase {
 
 	private static final File LOCAL_DB = new File("test-db");
@@ -40,7 +39,7 @@ public class SchemaCopyRunnerTest extends TestBase {
 		scr.setSource(new Database(sourceDb.getDataSource(), Dialect.H2, null));
 		assertFalse(LOCAL_DB_FILE.exists());
 		scr.setTarget(new Database(LOCAL_DB, null));
-		scr.setCsvData("testtable;c_id");
+		scr.setCsvData("testtable");
 		scr.copy(CopyTargetMode.CREATE);
 
 		// THEN: the file has been written

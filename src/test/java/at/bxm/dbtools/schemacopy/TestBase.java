@@ -10,11 +10,21 @@ public class TestBase {
 	/** Make sure the next test uses an empty H2 database */
 	@After
 	public void cleanup() {
-		if (sourceDb != null && sourceDb.getDialect() == Dialect.H2) {
-			sourceDb.execute("drop all objects");
-		}
-		if (targetDb != null && sourceDb.getDialect() == Dialect.H2) {
-			targetDb.execute("drop all objects");
+		cleanup(sourceDb);
+		cleanup(targetDb);
+	}
+
+	private void cleanup(Database database) {
+		if (database != null) {
+			switch (database.getDialect()) {
+				case H2:
+					database.execute("drop all objects");
+					break;
+				case ORACLE:
+					Oracle.dropTable(database, Oracle.TABLE_NAME);
+					Oracle.dropTable(database, Oracle.LOBTABLE_NAME);
+					break;
+			}
 		}
 	}
 
