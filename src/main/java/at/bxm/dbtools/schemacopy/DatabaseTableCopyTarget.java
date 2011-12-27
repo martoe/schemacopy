@@ -1,7 +1,5 @@
 package at.bxm.dbtools.schemacopy;
 
-import static at.bxm.dbtools.schemacopy.BaseCopier.*;
-
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.PreparedStatement;
@@ -152,7 +150,6 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 		final int count = cache.size();
 		if (count > 0) {
 			logger.debug("Writing " + count + " datasets to " + qualifiedTableName);
-			sqlLogger.debug(insertSql);
 			try {
 				target.batchUpdate(insertSql, batchSetter);
 			} catch (BadSqlGrammarException e) {

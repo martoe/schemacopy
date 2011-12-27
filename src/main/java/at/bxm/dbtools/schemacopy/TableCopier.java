@@ -29,7 +29,6 @@ public class TableCopier extends BaseCopier {
 		final String qualifiedTableName = sourceSchemaName != null ? sourceSchemaName + "." + sourceTableName
 			: sourceTableName;
 		final String query = "select * from " + qualifiedTableName;
-		sqlLogger.debug(query);
 		source.getTemplate().query(new PreparedStatementCreator() {
 
 			@Override
