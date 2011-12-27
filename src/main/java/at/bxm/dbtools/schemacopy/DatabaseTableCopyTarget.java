@@ -8,11 +8,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -22,9 +24,10 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 	private final JdbcTemplate target;
 	private final String tableName;
 	private final String schemaName;
-	private String qualifiedTableName;
+	private final CopyTargetMode mode;
 	private final int batchSize;
 	private final List<Object[]> cache;
+	private String qualifiedTableName;
 	private String insertSql;
 	private int columnCount;
 	private int rowsProcessed;
@@ -60,11 +63,13 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 	 * @param target (required)
 	 * @param tableName (required)
 	 * @param schemaName (optional, no qualified access if missing)
+	 * @param mode (required) 
 	 */
-	DatabaseTableCopyTarget(JdbcTemplate target, String tableName, String schemaName, int batchSize) {
+	DatabaseTableCopyTarget(JdbcTemplate target, String tableName, String schemaName, CopyTargetMode mode, int batchSize) {
 		this.target = target;
 		this.tableName = tableName;
 		this.schemaName = schemaName;
+		this.mode = mode;
 		this.batchSize = batchSize;
 		cache = new ArrayList<Object[]>(batchSize);
 	}
@@ -80,6 +85,10 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 			//			qualifiedTableName = (schemaName != null ? schemaName : metadata.getSchemaName(1))
 			//				+ "." + (tableName != null ? tableName : metadata.getTableName(1));
 			qualifiedTableName = schemaName != null ? schemaName + "." + tableName : tableName;
+
+			if (mode == CopyTargetMode.CREATE) {
+				createTargetTable(metadata);
+			}
 		}
 		columnCount = metadata.getColumnCount();
 		StringBuilder sb = new StringBuilder("insert into " + qualifiedTableName + "(");
@@ -89,6 +98,39 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 		sb.append(metadata.getColumnName(columnCount)).append(") values (")
 			.append(StringUtils.repeat("?,", columnCount - 1)).append("?)");
 		insertSql = sb.toString();
+	}
+
+	private void createTargetTable(ResultSetMetaData md) throws SQLException {
+		StringBuilder createSql = new StringBuilder("create table ").append(qualifiedTableName).append('(');
+		for (int i = 1; i <= md.getColumnCount(); i++) {
+			//			logger.trace(md.getColumnLabel(i) + " " + md.getColumnType(i) + "/" + md.getColumnTypeName(i) + "("
+			//				+ md.getColumnDisplaySize(i) + ")(" + md.getPrecision(i) + "," + md.getScale(i) + ")");
+			if (i > 1) {
+				createSql.append(',');
+			}
+			createSql.append("\n\t").append(md.getColumnName(i)).append(' ').append(md.getColumnTypeName(i));
+			switch (md.getColumnType(i)) {
+				case Types.VARCHAR:
+					createSql.append('(').append(md.getPrecision(i)).append(')');
+					break;
+				case Types.NUMERIC:
+					final int precision = md.getPrecision(i);
+					final int scale = md.getScale(i);
+					if (precision > 0 && scale >= 0) {
+						createSql.append('(').append(precision).append(',').append(scale).append(')');
+					}
+					// implement other "Types" when necessary 
+			}
+		}
+		createSql.append(')');
+		if (logger.isDebugEnabled()) {
+			logger.debug(createSql.toString());
+		}
+		try {
+			target.execute(createSql.toString());
+		} catch (BadSqlGrammarException e) {
+			throw new SchemaCopyException("Could not create target table", e);
+		}
 	}
 
 	@Override
@@ -111,7 +153,11 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 		if (count > 0) {
 			logger.debug("Writing " + count + " datasets to " + qualifiedTableName);
 			sqlLogger.debug(insertSql);
-			target.batchUpdate(insertSql, batchSetter);
+			try {
+				target.batchUpdate(insertSql, batchSetter);
+			} catch (BadSqlGrammarException e) {
+				throw new SchemaCopyException("SQL exception, possible because the target table doesn't exist", e);
+			}
 			rowsProcessed += count;
 			cache.clear();
 		}

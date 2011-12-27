@@ -10,6 +10,21 @@ public class TableCopierOracleTest extends TestBase {
 
 	//	create user targettest identified by test;
 	@Test
+	public void copy_create() {
+		// GIVEN: a non-empty source table with LOBs and an empty target database
+		final int datasets = 111;
+		sourceDb = createSimpleTableWithData(USERNAME_SOURCE, datasets);
+		targetDb = connect(USERNAME_TARGET);
+
+		// WHEN: copying
+		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.CREATE);
+
+		// THEN: target table contains equal dataset count
+		assertEquals(datasets, targetDb.queryForLong(TABLE_COUNTQUERY));
+	}
+
+	@Test
 	public void copyLob_create() {
 		// GIVEN: a non-empty source table with LOBs and an empty target database
 		final int datasets = 111;

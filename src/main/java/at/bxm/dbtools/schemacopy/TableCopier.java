@@ -24,7 +24,7 @@ public class TableCopier extends BaseCopier {
 		CopyTargetMode mode) {
 		final TableCopyTarget td = new DatabaseTableCopyTarget(target.getTemplate(),
 			targetTableName != null ? targetTableName : sourceTableName,
-			targetSchemaName != null ? targetSchemaName : sourceSchemaName, 100);
+			targetSchemaName != null ? targetSchemaName : sourceSchemaName, mode, 100);
 		final long time = System.currentTimeMillis();
 		final String qualifiedTableName = sourceSchemaName != null ? sourceSchemaName + "." + sourceTableName
 			: sourceTableName;

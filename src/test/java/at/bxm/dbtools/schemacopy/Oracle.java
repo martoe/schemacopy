@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ public final class Oracle {
 	private static final Logger logger = LoggerFactory.getLogger(Oracle.class);
 	protected static final String USERNAME_SOURCE = "sourcetest";
 	protected static final String USERNAME_TARGET = "targettest";
+	protected static final String TABLE_NAME = "testtable";
+	protected static final String TABLE_COUNTQUERY = "select count(1) from " + TABLE_NAME;
 	protected static final String LOBTABLE_NAME = "lobtable";
 	protected static final String LOBTABLE_COUNTQUERY = "select count(1) from " + LOBTABLE_NAME;
 	protected static final String SEQ_NAME = "seq_test";
@@ -45,10 +48,47 @@ public final class Oracle {
 		return new Database(datasource, Dialect.ORACLE, null);
 	}
 
+	protected static Database createSimpleTable(String databaseName) {
+		Database database = connect(databaseName);
+		try {
+			database.execute("truncate table " + TABLE_NAME); // FIXME better to clean up after test
+		} catch (BadSqlGrammarException e) {
+			logger.info(e.getMessage() + " => " + TABLE_NAME + " doesn't exist, creating it");
+			database.execute("create table " + TABLE_NAME + "(" +
+				"c_id number not null, " +
+				"c_text varchar2(100) not null, " +
+				"c_number number(16,2) not null, " +
+				"c_date timestamp not null, " +
+				"primary key (c_id))");
+		}
+		return database;
+	}
+
+	protected static Database createSimpleTableWithData(String databaseName, int datasets) {
+		Database datasource = createSimpleTable(databaseName);
+		final PreparedStatementSetter pss = new PreparedStatementSetter() {
+			private int count = 0;
+
+			@Override
+			public void setValues(PreparedStatement ps) throws SQLException {
+				ps.setInt(1, ++count);
+				ps.setString(2, "some text");
+				ps.setDouble(3, (double)count / 3);
+				ps.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+			}
+		};
+		for (int i = 0; i < datasets; i++) {
+			datasource.getTemplate()
+				.update("insert into " + TABLE_NAME + " (c_id, c_text, c_number, c_date) values (?, ?, ?, ?)", pss);
+		}
+		assertEquals(datasets, datasource.queryForLong(TABLE_COUNTQUERY));
+		return datasource;
+	}
+
 	protected static Database createLobTable(String username) {
 		Database database = connect(username);
 		try {
-			database.execute("truncate table " + LOBTABLE_NAME);
+			database.execute("truncate table " + LOBTABLE_NAME); // FIXME better to clean up after test
 		} catch (BadSqlGrammarException e) {
 			logger.info(e.getMessage() + " => " + LOBTABLE_NAME + " doesn't exist, creating it");
 			database.execute("create table " + LOBTABLE_NAME + "(" +
