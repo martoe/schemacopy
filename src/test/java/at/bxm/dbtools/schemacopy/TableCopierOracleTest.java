@@ -13,7 +13,7 @@ public class TableCopierOracleTest extends TestBase {
 	public void copy_create() {
 		// GIVEN: a non-empty source table with LOBs and an empty target database
 		final int datasets = 111;
-		sourceDb = createSimpleTableWithData(USERNAME_SOURCE, datasets);
+		sourceDb = createTableWithData(USERNAME_SOURCE, datasets);
 		targetDb = connect(USERNAME_TARGET);
 
 		// WHEN: copying
@@ -25,33 +25,18 @@ public class TableCopierOracleTest extends TestBase {
 	}
 
 	@Test
-	public void copyLob_create() {
-		// GIVEN: a non-empty source table with LOBs and an empty target database
-		final int datasets = 111;
-		sourceDb = createLobTableWithData(USERNAME_SOURCE, datasets);
-		targetDb = connect(USERNAME_TARGET);
-
-		// WHEN: copying
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
-		tc.copy(LOBTABLE_NAME, null, null, null, CopyTargetMode.CREATE);
-
-		// THEN: target table contains equal dataset count
-		assertEquals(datasets, targetDb.queryForLong(LOBTABLE_COUNTQUERY));
-	}
-
-	@Test
-	public void copyLob_reuse() {
+	public void copy_reuse() {
 		// GIVEN: a non-empty source table with LOBs and an empty target table
 		final int datasets = 111;
-		sourceDb = createLobTableWithData(USERNAME_SOURCE, datasets);
-		targetDb = createLobTable(USERNAME_TARGET);
+		sourceDb = createTableWithData(USERNAME_SOURCE, datasets);
+		targetDb = createTable(USERNAME_TARGET);
 
 		// WHEN: copying
 		TableCopier tc = new TableCopier(sourceDb, targetDb);
-		tc.copy(LOBTABLE_NAME, null, null, null, CopyTargetMode.REUSE);
+		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.REUSE);
 
 		// THEN: target table contains equal dataset count
-		assertEquals(datasets, targetDb.queryForLong(LOBTABLE_COUNTQUERY));
+		assertEquals(datasets, targetDb.queryForLong(TABLE_COUNTQUERY));
 	}
 
 }

@@ -22,7 +22,6 @@ public class TestBase {
 					break;
 				case ORACLE:
 					Oracle.dropTable(database, Oracle.TABLE_NAME);
-					Oracle.dropTable(database, Oracle.LOBTABLE_NAME);
 					break;
 			}
 		}

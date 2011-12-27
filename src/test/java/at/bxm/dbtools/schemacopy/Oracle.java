@@ -38,8 +38,6 @@ public final class Oracle {
 	protected static final String USERNAME_TARGET = "targettest";
 	protected static final String TABLE_NAME = "testtable";
 	protected static final String TABLE_COUNTQUERY = "select count(1) from " + TABLE_NAME;
-	protected static final String LOBTABLE_NAME = "lobtable";
-	protected static final String LOBTABLE_COUNTQUERY = "select count(1) from " + LOBTABLE_NAME;
 	protected static final String SEQ_NAME = "seq_test";
 	protected static final String SEQ_NEXTVALUE = "select " + SEQ_NAME + ".nextval from dual";
 
@@ -48,19 +46,22 @@ public final class Oracle {
 		return new Database(datasource, Dialect.ORACLE, null);
 	}
 
-	protected static Database createSimpleTable(String databaseName) {
+	protected static Database createTable(String databaseName) {
 		Database database = connect(databaseName);
 		database.execute("create table " + TABLE_NAME + "(" +
 			"c_id number not null, " +
 			"c_text varchar2(100) not null, " +
 			"c_number number(16,2) not null, " +
 			"c_date timestamp not null, " +
+			"c_clob clob not null, " +
+			"c_blob blob not null, " +
 			"primary key (c_id))");
 		return database;
 	}
 
-	protected static Database createSimpleTableWithData(String databaseName, int datasets) {
-		Database datasource = createSimpleTable(databaseName);
+	protected static Database createTableWithData(String databaseName, int datasets) {
+		Database datasource = createTable(databaseName);
+		final LobCreator lobCreator = new DefaultLobHandler().getLobCreator();
 		final PreparedStatementSetter pss = new PreparedStatementSetter() {
 			private int count = 0;
 
@@ -70,44 +71,18 @@ public final class Oracle {
 				ps.setString(2, "some text");
 				ps.setDouble(3, (double)count / 3);
 				ps.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+				lobCreator.setClobAsString(ps, 5, "some very very long text");
+				lobCreator.setBlobAsBytes(ps, 6, "some very big pile of bytes".getBytes());
 			}
 		};
 		for (int i = 0; i < datasets; i++) {
 			datasource.getTemplate()
-				.update("insert into " + TABLE_NAME + " (c_id, c_text, c_number, c_date) values (?, ?, ?, ?)", pss);
+				.update(
+					"insert into " + TABLE_NAME + " (c_id, c_text, c_number, c_date, c_clob, c_blob) values (?, ?, ?, ?, ?, ?)",
+					pss);
 		}
 		assertEquals(datasets, datasource.queryForLong(TABLE_COUNTQUERY));
 		return datasource;
-	}
-
-	protected static Database createLobTable(String username) {
-		Database database = connect(username);
-		database.execute("create table " + LOBTABLE_NAME + "(" +
-			"c_id number not null, " +
-			"c_clob clob not null, " +
-			"c_blob blob not null, " +
-			"primary key (c_id))");
-		return database;
-	}
-
-	protected static Database createLobTableWithData(String username, int datasets) {
-		Database database = createLobTable(USERNAME_SOURCE);
-		final LobCreator lobCreator = new DefaultLobHandler().getLobCreator();
-		final PreparedStatementSetter pss = new PreparedStatementSetter() {
-			private int count = 0;
-
-			@Override
-			public void setValues(PreparedStatement ps) throws SQLException {
-				ps.setInt(1, ++count);
-				lobCreator.setClobAsString(ps, 2, "some text");
-				lobCreator.setBlobAsBytes(ps, 3, "some bytes".getBytes());
-			}
-		};
-		for (int i = 0; i < datasets; i++) {
-			database.getTemplate().update("insert into " + LOBTABLE_NAME + " (c_id, c_clob, c_blob) values (?, ?, ?)", pss);
-		}
-		assertEquals(datasets, database.queryForLong(LOBTABLE_COUNTQUERY));
-		return database;
 	}
 
 	protected static Database createSequence(String username, int start, int increment) {

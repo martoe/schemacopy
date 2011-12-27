@@ -18,21 +18,21 @@ public class SchemaCopyRunnerTest extends TestBase {
 	public void main() throws IOException {
 		// GIVEN: a non-empty source table and an empty target table
 		final int datasets = 1111;
-		sourceDb = H2.createSimpleTableWithData("source", datasets);
-		targetDb = H2.createSimpleTable("target");
+		sourceDb = H2.createTableWithData("source", datasets);
+		targetDb = H2.createTable("target");
 
 		// WHEN: executing the programm
 		SchemaCopyRunner.main(null);
 
 		// THEN: target table contains datasets
-		assertEquals(datasets, targetDb.queryForLong(H2.SIMPLETABLE_COUNTQUERY));
+		assertEquals(datasets, targetDb.queryForLong(H2.TABLE_COUNTQUERY));
 	}
 
 	@Test
 	public void exportAndImport() {
 		// GIVEN: a non-empty source table
 		final int datasets = 1111;
-		sourceDb = H2.createSimpleTableWithData("source", datasets);
+		sourceDb = H2.createTableWithData("source", datasets);
 
 		// WHEN: exporting to a new file
 		SchemaCopyRunner scr = new SchemaCopyRunner();
@@ -46,13 +46,13 @@ public class SchemaCopyRunnerTest extends TestBase {
 		assertTrue(LOCAL_DB_FILE.exists());
 
 		// WHEN: importing this file to another database
-		targetDb = H2.createSimpleTable("target");
+		targetDb = H2.createTable("target");
 		scr.setSource(new Database(LOCAL_DB, null));
 		scr.setTarget(new Database(targetDb.getDataSource(), Dialect.H2, null));
 		scr.copy(CopyTargetMode.REUSE);
 
 		// THEN: target table contains datasets
-		assertEquals(datasets, targetDb.queryForLong(H2.SIMPLETABLE_COUNTQUERY));
+		assertEquals(datasets, targetDb.queryForLong(H2.TABLE_COUNTQUERY));
 	}
 
 	@After
