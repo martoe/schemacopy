@@ -1,11 +1,8 @@
 package at.bxm.dbtools.schemacopy;
 
-import at.bxm.dbtools.schemacopy.sequence.SequenceStrategy;
-
-import at.bxm.dbtools.schemacopy.sequence.OracleSequenceStrategy;
-
 import at.bxm.dbtools.schemacopy.sequence.H2SequenceStrategy;
-
+import at.bxm.dbtools.schemacopy.sequence.OracleSequenceStrategy;
+import at.bxm.dbtools.schemacopy.sequence.SequenceStrategy;
 import java.io.File;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
@@ -16,10 +13,9 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /** The source or target of a cloning operation */
 public class Database /*extends JdbcTemplate*/{
-	static final String LOCAL_PASSWORD = "$0mePa55w0rd";
-	static final String LOCAL_USERNAME = "schemacopy";
+	private static final String LOCAL_PASSWORD = "$0mePa55w0rd";
+	private static final String LOCAL_USERNAME = "schemacopy";
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private final File localFile;
 	private final DataSource dataSource;
 	private final Dialect dialect;
 	private final String schemaName;
@@ -31,7 +27,7 @@ public class Database /*extends JdbcTemplate*/{
 	}
 
 	/** using a file-based database (for importing/exporting) */
-	public Database(File localFile, String schemaName) {
+	public Database(File localFile, String schemaName) { // TODO only called from tests
 		this(localFile, new DriverManagerDataSource("jdbc:h2:file:" + localFile.getAbsolutePath(),
 			LOCAL_USERNAME, LOCAL_PASSWORD), Dialect.H2, schemaName);
 	}
@@ -43,7 +39,6 @@ public class Database /*extends JdbcTemplate*/{
 		if (localFile != null) {
 			logger.info("Database based on local file: " + localFile.getAbsolutePath());
 		}
-		this.localFile = localFile;
 		this.dataSource = dataSource;
 		this.dialect = dialect;
 		this.schemaName = StringUtils.trimToNull(schemaName);
@@ -64,12 +59,12 @@ public class Database /*extends JdbcTemplate*/{
 
 	public SequenceStrategy getSequenceStrategy() {
 		switch (dialect) {
-		case ORACLE:
-			return new OracleSequenceStrategy(template);
-		case H2:
-			return new H2SequenceStrategy(template);
-		default:
-			throw new IllegalArgumentException("No strategy for " + dialect);
+			case ORACLE:
+				return new OracleSequenceStrategy(template);
+			case H2:
+				return new H2SequenceStrategy(template);
+			default:
+				throw new IllegalArgumentException("No strategy for " + dialect);
 		}
 	}
 
@@ -77,10 +72,12 @@ public class Database /*extends JdbcTemplate*/{
 		return template;
 	}
 
-	public void execute(String sql) {
+	// TODO only called from tests
+	void execute(String sql) {
 		template.execute(sql);
 	}
 
+	// TODO only called from tests
 	public long queryForLong(String sql) {
 		return template.queryForLong(sql);
 	}

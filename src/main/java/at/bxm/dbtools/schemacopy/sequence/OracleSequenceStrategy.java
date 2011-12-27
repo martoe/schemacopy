@@ -1,6 +1,5 @@
 package at.bxm.dbtools.schemacopy.sequence;
 
-
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -11,7 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public class OracleSequenceStrategy implements SequenceStrategy {
 
-	static final String INCREMENT_QUERY = "select increment_by from user_sequences where upper(sequence_name)=upper(?)";
+	private static final String INCREMENT_QUERY = "select increment_by from user_sequences where upper(sequence_name)=upper(?)";
 	private final JdbcTemplate database;
 
 	public OracleSequenceStrategy(JdbcTemplate database) {
