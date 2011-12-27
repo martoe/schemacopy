@@ -54,7 +54,7 @@ public class TableCopierMixedTest extends TestBase {
 	}
 
 	@Test
-	public void copyFromH2ToOracle_create() {
+	public void copyFromH2ToOracle_create() { // FIXME
 		// GIVEN: a non-empty H2 table with LOBs and an empty Oracle database
 		final int datasets = 123;
 		sourceDb = H2.createTableWithData("source", 123);

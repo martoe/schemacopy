@@ -72,6 +72,25 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 		cache = new ArrayList<Object[]>(batchSize);
 	}
 
+	@Override
+	public void processRow(ResultSet rs) throws SQLException {
+		if (insertSql == null) {
+			setMetadata(rs);
+		}
+		Object[] data = new Object[columnCount];
+		for (int i = 1; i <= columnCount; i++) {
+			data[i - 1] = rs.getObject(i);
+			if (data[i - 1].getClass().getName().equals("oracle.sql.TIMESTAMP")) {
+				// workaround because Oracle returns the wrong object type
+				data[i - 1] = rs.getTimestamp(i);
+			}
+		}
+		cache.add(data);
+		if (cache.size() >= batchSize || rs.isLast()) {
+			flush();
+		}
+	}
+
 	private void setMetadata(ResultSet rs) throws SQLException {
 		// rs.isLast() needs a scrollable resultset
 		if (rs.getType() == ResultSet.TYPE_FORWARD_ONLY) {
@@ -106,18 +125,25 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 			if (i > 1) {
 				createSql.append(',');
 			}
-			createSql.append("\n\t").append(md.getColumnName(i)).append(' ').append(md.getColumnTypeName(i));
+			createSql.append("\n\t").append(md.getColumnName(i)).append(' ');
 			switch (md.getColumnType(i)) {
 				case Types.VARCHAR:
-					createSql.append('(').append(md.getPrecision(i)).append(')');
+					createSql.append(md.getColumnTypeName(i)).append('(').append(md.getPrecision(i)).append(')');
 					break;
 				case Types.NUMERIC:
+					createSql.append(md.getColumnTypeName(i));
 					final int precision = md.getPrecision(i);
 					final int scale = md.getScale(i);
 					if (precision > 0 && scale >= 0) {
 						createSql.append('(').append(precision).append(',').append(scale).append(')');
 					}
-					// implement other "Types" when necessary 
+					break;
+				case Types.BIGINT:
+					createSql.append("long"); // "bigint" is understood by H2, but not Oracle
+					break;
+				// implement other "Types" when necessary
+				default:
+					createSql.append(md.getColumnTypeName(i));
 			}
 		}
 		createSql.append(')');
@@ -128,21 +154,6 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 			target.execute(createSql.toString());
 		} catch (BadSqlGrammarException e) {
 			throw new SchemaCopyException("Could not create target table", e);
-		}
-	}
-
-	@Override
-	public void processRow(ResultSet rs) throws SQLException {
-		if (insertSql == null) {
-			setMetadata(rs);
-		}
-		Object[] data = new Object[columnCount];
-		for (int i = 1; i <= columnCount; i++) {
-			data[i - 1] = rs.getObject(i);
-		}
-		cache.add(data);
-		if (cache.size() >= batchSize || rs.isLast()) {
-			flush();
 		}
 	}
 

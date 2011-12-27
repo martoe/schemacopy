@@ -2,6 +2,7 @@ package at.bxm.dbtools.schemacopy;
 
 import static org.junit.Assert.*;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -49,13 +50,15 @@ public final class Oracle {
 	protected static Database createTable(String databaseName) {
 		Database database = connect(databaseName);
 		database.execute("create table " + TABLE_NAME + "(" +
-			"c_id number not null, " +
+			"c_int integer not null, " +
+			"c_long long not null, " +
 			"c_text varchar2(100) not null, " +
-			"c_number number(16,2) not null, " +
-			"c_date timestamp not null, " +
+			"c_decimal number(16,2) not null, " +
+			"c_date date not null, " +
+			"c_timestamp timestamp not null, " +
 			"c_clob clob not null, " +
 			"c_blob blob not null, " +
-			"primary key (c_id))");
+			"primary key (c_int))");
 		return database;
 	}
 
@@ -67,19 +70,23 @@ public final class Oracle {
 
 			@Override
 			public void setValues(PreparedStatement ps) throws SQLException {
-				ps.setInt(1, ++count);
-				ps.setString(2, "some text");
-				ps.setDouble(3, (double)count / 3);
-				ps.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-				lobCreator.setClobAsString(ps, 5, "some very very long text");
-				lobCreator.setBlobAsBytes(ps, 6, "some very big pile of bytes".getBytes());
+				int i = 0;
+				ps.setInt(++i, ++count);
+				ps.setLong(++i, ++count);
+				ps.setString(++i, "some text");
+				ps.setDouble(++i, (double)count / 3);
+				ps.setDate(++i, new Date(System.currentTimeMillis()));
+				ps.setTimestamp(++i, new Timestamp(System.currentTimeMillis()));
+				lobCreator.setClobAsString(ps, ++i, "some very very long text");
+				lobCreator.setBlobAsBytes(ps, ++i, "some very big pile of bytes".getBytes());
 			}
 		};
 		for (int i = 0; i < datasets; i++) {
-			datasource.getTemplate()
-				.update(
-					"insert into " + TABLE_NAME + " (c_id, c_text, c_number, c_date, c_clob, c_blob) values (?, ?, ?, ?, ?, ?)",
-					pss);
+			datasource.getTemplate().update(
+				"insert into " + TABLE_NAME
+					+ " (c_int, c_long, c_text, c_decimal, c_date, c_timestamp, c_clob, c_blob)" +
+					" values (?, ?, ?, ?, ?, ?, ?, ?)",
+				pss);
 		}
 		assertEquals(datasets, datasource.queryForLong(TABLE_COUNTQUERY));
 		return datasource;
