@@ -1,6 +1,15 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.run;
 
 import static org.junit.Assert.*;
+
+import at.bxm.dbtools.schemacopy.Database;
+import at.bxm.dbtools.schemacopy.Dialect;
+import at.bxm.dbtools.schemacopy.H2;
+import at.bxm.dbtools.schemacopy.TestBase;
+
+import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
+
+import at.bxm.dbtools.schemacopy.run.SchemaCopyRunner;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,6 +1,14 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.table;
 
 import static org.junit.Assert.*;
+
+import at.bxm.dbtools.schemacopy.H2;
+import at.bxm.dbtools.schemacopy.Oracle;
+import at.bxm.dbtools.schemacopy.TestBase;
+
+import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
+
+import at.bxm.dbtools.schemacopy.table.TableCopier;
 
 import org.junit.Test;
 

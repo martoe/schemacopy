@@ -83,7 +83,7 @@
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
 							<addDefaultImplementationEntries />
-							<mainClass>at.bxm.dbtools.schemacopy.SchemaCopyRunner</mainClass>
+							<mainClass>at.bxm.dbtools.schemacopy.run.SchemaCopyRunner</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

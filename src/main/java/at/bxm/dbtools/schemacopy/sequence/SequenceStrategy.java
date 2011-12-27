@@ -1,4 +1,4 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.sequence;
 
 
 public interface SequenceStrategy {

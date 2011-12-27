@@ -1,4 +1,4 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.table;
 
 /**
  * How to handle the to-be-copied database objects at the target database

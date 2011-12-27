@@ -1,4 +1,7 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.table;
+
+import at.bxm.dbtools.schemacopy.BaseCopier;
+import at.bxm.dbtools.schemacopy.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

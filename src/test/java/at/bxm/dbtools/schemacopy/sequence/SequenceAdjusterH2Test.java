@@ -1,7 +1,12 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.sequence;
 
 import static at.bxm.dbtools.schemacopy.H2.*;
 import static org.junit.Assert.*;
+
+import at.bxm.dbtools.schemacopy.SchemaCopyException;
+import at.bxm.dbtools.schemacopy.TestBase;
+
+import at.bxm.dbtools.schemacopy.sequence.SequenceAdjuster;
 
 import org.junit.Test;
 

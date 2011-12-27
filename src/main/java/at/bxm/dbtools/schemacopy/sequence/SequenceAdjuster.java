@@ -1,4 +1,8 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.sequence;
+
+import at.bxm.dbtools.schemacopy.BaseCopier;
+import at.bxm.dbtools.schemacopy.Database;
+import at.bxm.dbtools.schemacopy.SchemaCopyException;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 

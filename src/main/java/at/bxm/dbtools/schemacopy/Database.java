@@ -1,5 +1,11 @@
 package at.bxm.dbtools.schemacopy;
 
+import at.bxm.dbtools.schemacopy.sequence.SequenceStrategy;
+
+import at.bxm.dbtools.schemacopy.sequence.OracleSequenceStrategy;
+
+import at.bxm.dbtools.schemacopy.sequence.H2SequenceStrategy;
+
 import java.io.File;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;

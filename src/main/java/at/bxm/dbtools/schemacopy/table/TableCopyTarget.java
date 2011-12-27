@@ -1,4 +1,4 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.table;
 
 import org.springframework.jdbc.core.RowCallbackHandler;
 

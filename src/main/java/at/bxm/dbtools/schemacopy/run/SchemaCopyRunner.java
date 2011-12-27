@@ -1,4 +1,14 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.run;
+
+import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
+
+import at.bxm.dbtools.schemacopy.Database;
+import at.bxm.dbtools.schemacopy.Dialect;
+import at.bxm.dbtools.schemacopy.SchemaCopyException;
+
+import at.bxm.dbtools.schemacopy.sequence.SequenceAdjuster;
+
+import at.bxm.dbtools.schemacopy.table.TableCopier;
 
 import java.io.BufferedReader;
 import java.io.File;

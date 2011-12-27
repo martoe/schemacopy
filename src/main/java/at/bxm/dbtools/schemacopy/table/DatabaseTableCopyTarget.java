@@ -1,4 +1,6 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.table;
+
+import at.bxm.dbtools.schemacopy.SchemaCopyException;
 
 import java.sql.Blob;
 import java.sql.Clob;

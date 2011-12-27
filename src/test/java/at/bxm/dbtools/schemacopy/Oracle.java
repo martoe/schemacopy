@@ -35,19 +35,19 @@ import org.springframework.jdbc.support.lob.LobCreator;
 public final class Oracle {
 
 	private static final Logger logger = LoggerFactory.getLogger(Oracle.class);
-	protected static final String USERNAME_SOURCE = "sourcetest";
-	protected static final String USERNAME_TARGET = "targettest";
-	protected static final String TABLE_NAME = "testtable";
-	protected static final String TABLE_COUNTQUERY = "select count(1) from " + TABLE_NAME;
-	protected static final String SEQ_NAME = "seq_test";
-	protected static final String SEQ_NEXTVALUE = "select " + SEQ_NAME + ".nextval from dual";
+	public static final String USERNAME_SOURCE = "sourcetest";
+	public static final String USERNAME_TARGET = "targettest";
+	public static final String TABLE_NAME = "testtable";
+	public static final String TABLE_COUNTQUERY = "select count(1) from " + TABLE_NAME;
+	public static final String SEQ_NAME = "seq_test";
+	public static final String SEQ_NEXTVALUE = "select " + SEQ_NAME + ".nextval from dual";
 
-	protected static Database connect(String username) {
+	public static Database connect(String username) {
 		DataSource datasource = new DriverManagerDataSource("jdbc:oracle:thin:@localhost:1521:XE", username, "test");
 		return new Database(datasource, Dialect.ORACLE, null);
 	}
 
-	protected static Database createTable(String databaseName) {
+	public static Database createTable(String databaseName) {
 		Database database = connect(databaseName);
 		database.execute("create table " + TABLE_NAME + "(" +
 			"c_int integer not null, " +
@@ -62,7 +62,7 @@ public final class Oracle {
 		return database;
 	}
 
-	protected static Database createTableWithData(String databaseName, int datasets) {
+	public static Database createTableWithData(String databaseName, int datasets) {
 		Database datasource = createTable(databaseName);
 		final LobCreator lobCreator = new DefaultLobHandler().getLobCreator();
 		final PreparedStatementSetter pss = new PreparedStatementSetter() {
@@ -92,7 +92,7 @@ public final class Oracle {
 		return datasource;
 	}
 
-	protected static Database createSequence(String username, int start, int increment) {
+	public static Database createSequence(String username, int start, int increment) {
 		Database database = connect(username);
 		try {
 			database.execute("drop sequence " + SEQ_NAME);

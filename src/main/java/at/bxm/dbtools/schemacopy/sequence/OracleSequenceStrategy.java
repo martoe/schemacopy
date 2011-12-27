@@ -1,4 +1,5 @@
-package at.bxm.dbtools.schemacopy;
+package at.bxm.dbtools.schemacopy.sequence;
+
 
 import org.springframework.jdbc.core.JdbcTemplate;
 

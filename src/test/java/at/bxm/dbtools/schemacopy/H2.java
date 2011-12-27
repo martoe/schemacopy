@@ -14,11 +14,11 @@ import org.springframework.jdbc.support.lob.LobCreator;
 
 public final class H2 {
 
-	protected static final String TABLE_COUNTQUERY = "select count(1) from testtable";
-	protected static final String SEQ_NAME = "seq_test";
-	protected static final String SEQ_NEXTVALUE = "select next value for " + SEQ_NAME;
+	public static final String TABLE_COUNTQUERY = "select count(1) from testtable";
+	public static final String SEQ_NAME = "seq_test";
+	public static final String SEQ_NEXTVALUE = "select next value for " + SEQ_NAME;
 
-	protected static Database createInMemoryDatabase(String name) {
+	public static Database createInMemoryDatabase(String name) {
 		// keep the database as long as the VM lives: DB_CLOSE_DELAY=-1
 		// TRACE_LEVEL_SYSTEM_OUT: 0=none, 1=error, 2=info, 3=debug
 		DataSource datasource = new DriverManagerDataSource(
@@ -26,7 +26,7 @@ public final class H2 {
 		return new Database(datasource, Dialect.H2, null);
 	}
 
-	protected static Database createTable(String databaseName) {
+	public static Database createTable(String databaseName) {
 		Database database = createInMemoryDatabase(databaseName);
 		database.execute("create table testtable(" +
 			"c_int integer not null, " +
@@ -41,7 +41,7 @@ public final class H2 {
 		return database;
 	}
 
-	protected static Database createTableWithData(String databaseName, int datasets) {
+	public static Database createTableWithData(String databaseName, int datasets) {
 		Database datasource = createTable(databaseName);
 		final LobCreator lobCreator = new DefaultLobHandler().getLobCreator();
 		final PreparedStatementSetter pss = new PreparedStatementSetter() {
@@ -70,7 +70,7 @@ public final class H2 {
 		return datasource;
 	}
 
-	protected static Database createSequence(String databaseName, int start, int increment) {
+	public static Database createSequence(String databaseName, int start, int increment) {
 		Database database = createInMemoryDatabase(databaseName);
 		database.execute("create sequence " + SEQ_NAME + " start with " + start + " increment by " + increment);
 		assertEquals(start, database.queryForLong(SEQ_NEXTVALUE)); // move the sequence to the start value
