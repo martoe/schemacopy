@@ -1,15 +1,5 @@
 package at.bxm.dbtools.schemacopy.run;
 
-import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
-
-import at.bxm.dbtools.schemacopy.Database;
-import at.bxm.dbtools.schemacopy.Dialect;
-import at.bxm.dbtools.schemacopy.SchemaCopyException;
-
-import at.bxm.dbtools.schemacopy.sequence.SequenceAdjuster;
-
-import at.bxm.dbtools.schemacopy.table.TableCopier;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,10 +11,18 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Properties;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import at.bxm.dbtools.schemacopy.Database;
+import at.bxm.dbtools.schemacopy.Dialect;
+import at.bxm.dbtools.schemacopy.SchemaCopyException;
+import at.bxm.dbtools.schemacopy.sequence.SequenceAdjuster;
+import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
+import at.bxm.dbtools.schemacopy.table.TableCopier;
 
 public class SchemaCopyRunner {
 
@@ -81,26 +79,31 @@ public class SchemaCopyRunner {
 	}
 
 	public static void main(String[] args) throws IOException {
-		String propertiesfile = args != null && args.length > 0 ? args[0] : "schemacopy.properties";
+		String propertiesfile = args != null && args.length > 0 ? args[0] : null;
 		Reader is = null;
 		InputStream datafile = null;
 		try {
-			is = open(propertiesfile);
-			Properties p = new Properties();
-			p.load(is);
+			Properties p;
+			if (propertiesfile != null) {
+				p = new Properties();
+				is = open(propertiesfile);
+				p.load(is);
+			} else {
+				p = System.getProperties();
+			}
 			SchemaCopyRunner scr = new SchemaCopyRunner();
 			scr.setSource(new Database(
-				new DriverManagerDataSource(p.getProperty("source.url"),
-					p.getProperty("source.username"), p.getProperty("source.password")),
-				Dialect.valueOf(p.getProperty("source.dialect")),
-				p.getProperty("source.schemaname")));
+				new DriverManagerDataSource(p.getProperty("schemacopy.source.url"),
+					p.getProperty("schemacopy.source.username"), p.getProperty("schemacopy.source.password")),
+				Dialect.valueOf(p.getProperty("schemacopy.source.dialect")),
+				p.getProperty("schemacopy.source.schemaname")));
 			scr.setTarget(new Database(
-				new DriverManagerDataSource(p.getProperty("target.url"),
-					p.getProperty("target.username"), p.getProperty("target.password")),
-				Dialect.valueOf(p.getProperty("target.dialect")),
-				p.getProperty("target.schemaname")));
-			scr.setCsvDataResource(p.getProperty("datafile"));
-			scr.copy(CopyTargetMode.valueOf(p.getProperty("copymode").toUpperCase()));
+				new DriverManagerDataSource(p.getProperty("schemacopy.target.url"),
+					p.getProperty("schemacopy.target.username"), p.getProperty("schemacopy.target.password")),
+				Dialect.valueOf(p.getProperty("schemacopy.target.dialect")),
+				p.getProperty("schemacopy.target.schemaname")));
+			scr.setCsvDataResource(p.getProperty("schemacopy.datafile"));
+			scr.copy(CopyTargetMode.valueOf(p.getProperty("schemacopy.copymode").toUpperCase()));
 		} finally {
 			if (is != null) {
 				is.close();

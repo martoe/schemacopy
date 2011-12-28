@@ -2,20 +2,18 @@ package at.bxm.dbtools.schemacopy.run;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.h2.engine.Constants;
+import org.junit.After;
+import org.junit.Test;
+
 import at.bxm.dbtools.schemacopy.Database;
 import at.bxm.dbtools.schemacopy.Dialect;
 import at.bxm.dbtools.schemacopy.H2;
 import at.bxm.dbtools.schemacopy.TestBase;
-
 import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
-
-import at.bxm.dbtools.schemacopy.run.SchemaCopyRunner;
-
-import java.io.File;
-import java.io.IOException;
-import org.h2.engine.Constants;
-import org.junit.After;
-import org.junit.Test;
 
 // TODO copy/export/import sequences
 public class SchemaCopyRunnerTest extends TestBase {
@@ -31,7 +29,7 @@ public class SchemaCopyRunnerTest extends TestBase {
 		targetDb = H2.createTable("target");
 
 		// WHEN: executing the programm
-		SchemaCopyRunner.main(null);
+		SchemaCopyRunner.main(new String[] { "schemacopy.properties" });
 
 		// THEN: target table contains datasets
 		assertEquals(datasets, targetDb.queryForLong(H2.TABLE_COUNTQUERY));
