@@ -1,7 +1,5 @@
 package at.bxm.dbtools.schemacopy.table;
 
-import at.bxm.dbtools.schemacopy.SchemaCopyException;
-
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.PreparedStatement;
@@ -11,12 +9,15 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import at.bxm.dbtools.schemacopy.SchemaCopyException;
 
 class DatabaseTableCopyTarget implements TableCopyTarget {
 
@@ -82,7 +83,7 @@ class DatabaseTableCopyTarget implements TableCopyTarget {
 		Object[] data = new Object[columnCount];
 		for (int i = 1; i <= columnCount; i++) {
 			data[i - 1] = rs.getObject(i);
-			if (data[i - 1].getClass().getName().equals("oracle.sql.TIMESTAMP")) {
+			if (data[i - 1] != null && data[i - 1].getClass().getName().equals("oracle.sql.TIMESTAMP")) {
 				// workaround because Oracle returns the wrong object type
 				data[i - 1] = rs.getTimestamp(i);
 			}

@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -81,7 +80,6 @@ public class SchemaCopyRunner {
 	public static void main(String[] args) throws IOException {
 		String propertiesfile = args != null && args.length > 0 ? args[0] : null;
 		Reader is = null;
-		InputStream datafile = null;
 		try {
 			Properties p;
 			if (propertiesfile != null) {
@@ -95,21 +93,18 @@ public class SchemaCopyRunner {
 			scr.setSource(new Database(
 				new DriverManagerDataSource(p.getProperty("schemacopy.source.url"),
 					p.getProperty("schemacopy.source.username"), p.getProperty("schemacopy.source.password")),
-				Dialect.valueOf(p.getProperty("schemacopy.source.dialect")),
+				Dialect.valueOf(p.getProperty("schemacopy.source.dialect").toUpperCase()),
 				p.getProperty("schemacopy.source.schemaname")));
 			scr.setTarget(new Database(
 				new DriverManagerDataSource(p.getProperty("schemacopy.target.url"),
 					p.getProperty("schemacopy.target.username"), p.getProperty("schemacopy.target.password")),
-				Dialect.valueOf(p.getProperty("schemacopy.target.dialect")),
+				Dialect.valueOf(p.getProperty("schemacopy.target.dialect").toUpperCase()),
 				p.getProperty("schemacopy.target.schemaname")));
 			scr.setCsvDataResource(p.getProperty("schemacopy.datafile"));
 			scr.copy(CopyTargetMode.valueOf(p.getProperty("schemacopy.copymode").toUpperCase()));
 		} finally {
 			if (is != null) {
 				is.close();
-			}
-			if (datafile != null) {
-				datafile.close();
 			}
 		}
 	}
@@ -133,7 +128,7 @@ public class SchemaCopyRunner {
 				logger.debug("Using file " + file.getAbsolutePath());
 				return new FileReader(file);
 			} else {
-				throw new FileNotFoundException(resource);
+				throw new FileNotFoundException(file.getAbsolutePath());
 			}
 		}
 	}

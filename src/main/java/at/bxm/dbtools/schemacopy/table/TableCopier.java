@@ -1,13 +1,14 @@
 package at.bxm.dbtools.schemacopy.table;
 
-import at.bxm.dbtools.schemacopy.BaseCopier;
-import at.bxm.dbtools.schemacopy.Database;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import org.springframework.jdbc.core.PreparedStatementCreator;
+
+import at.bxm.dbtools.schemacopy.BaseCopier;
+import at.bxm.dbtools.schemacopy.Database;
 
 public class TableCopier extends BaseCopier {
 
@@ -19,7 +20,7 @@ public class TableCopier extends BaseCopier {
 	 * @param sourceTableName (required)
 	 * @param sourceSchemaName (optional, no qualified access if missing)
 	 * @param targetTableName (optional, defaults to "sourceTableName")
-	 * @param targetSchemaName (optional, defaults to "sourceSchemaName")
+	 * @param targetSchemaName (optional)
 	 * @param mode (required) 
 	 * @return the number of datasets that have been copied
 	 */
@@ -27,7 +28,7 @@ public class TableCopier extends BaseCopier {
 		CopyTargetMode mode) {
 		final TableCopyTarget td = new DatabaseTableCopyTarget(target.getTemplate(),
 			targetTableName != null ? targetTableName : sourceTableName,
-			targetSchemaName != null ? targetSchemaName : sourceSchemaName, mode, 100);
+			targetSchemaName, mode, 100);
 		final long time = System.currentTimeMillis();
 		final String qualifiedTableName = sourceSchemaName != null ? sourceSchemaName + "." + sourceTableName
 			: sourceTableName;
