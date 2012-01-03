@@ -76,11 +76,13 @@ public class TableCopierH2Test extends TestBase {
 		// WHEN: copying only selected rows and columns
 		final int datasetsToCopy = 147;
 		TableCopier tc = new TableCopier(sourceDb, targetDb);
-		tc.copyFromQuery("blabla", TABLE_NAME, null, CopyTargetMode.CREATE);
+		int datasetsCopied = tc.copyFromQuery("select c_int, c_timestamp, c_blob from " + TABLE_NAME + " where c_int<="
+			+ datasetsToCopy, TABLE_NAME, null, CopyTargetMode.CREATE);
 
 		// THEN: target table contains only the selected rows and columns
+		assertEquals(datasetsToCopy, datasetsCopied);
 		assertEquals(datasetsToCopy, targetDb.queryForLong(TABLE_COUNTQUERY));
-		assertEquals(2, getColumnCount(targetDb, TABLE_NAME));
+		assertEquals(3, getColumnCount(targetDb, TABLE_NAME));
 	}
 
 }

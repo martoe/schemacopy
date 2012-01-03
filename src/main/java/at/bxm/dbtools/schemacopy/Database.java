@@ -4,11 +4,18 @@ import at.bxm.dbtools.schemacopy.sequence.H2SequenceStrategy;
 import at.bxm.dbtools.schemacopy.sequence.OracleSequenceStrategy;
 import at.bxm.dbtools.schemacopy.sequence.SequenceStrategy;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /** The source or target of a cloning operation */
@@ -80,6 +87,15 @@ public class Database /*extends JdbcTemplate*/{
 	// TODO only called from tests
 	public long queryForLong(String sql) {
 		return template.queryForLong(sql);
+	}
+
+	public void query(final String sqlStatement, RowCallbackHandler rch) throws DataAccessException {
+		template.query(new PreparedStatementCreator() {
+			@Override
+			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+				return con.prepareStatement(sqlStatement, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			}
+		}, rch);
 	}
 
 }

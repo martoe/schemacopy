@@ -4,10 +4,13 @@ import static org.junit.Assert.*;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import javax.sql.DataSource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobCreator;
@@ -53,7 +56,7 @@ public final class H2 {
 			public void setValues(PreparedStatement ps) throws SQLException {
 				int i = 0;
 				ps.setInt(++i, ++count);
-				ps.setLong(++i, ++count);
+				ps.setLong(++i, count * 123);
 				ps.setString(++i, "some text");
 				ps.setDouble(++i, (double)count / 3);
 				ps.setDate(++i, new Date(System.currentTimeMillis()));
@@ -80,7 +83,13 @@ public final class H2 {
 	}
 
 	public static int getColumnCount(Database database, String tableName) {
-		return -1; // FIXME implement
+		return database.getTemplate().query("select * from " + tableName, new ResultSetExtractor<Integer>() {
+
+			@Override
+			public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
+				return rs.getMetaData().getColumnCount();
+			}
+		}).intValue();
 	}
 
 }

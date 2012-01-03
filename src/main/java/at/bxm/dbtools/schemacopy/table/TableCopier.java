@@ -2,11 +2,6 @@ package at.bxm.dbtools.schemacopy.table;
 
 import at.bxm.dbtools.schemacopy.BaseCopier;
 import at.bxm.dbtools.schemacopy.Database;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 
 public class TableCopier extends BaseCopier {
 
@@ -26,18 +21,11 @@ public class TableCopier extends BaseCopier {
 		CopyTargetMode mode) {
 		final TableCopyTarget td = new DatabaseTableCopyTarget(target.getTemplate(),
 			targetTableName != null ? targetTableName : sourceTableName,
-			targetSchemaName, mode, 100);
+			targetSchemaName, mode, 100); // TODO batchsize konfigurierbar
 		final long time = System.currentTimeMillis();
 		final String qualifiedTableName = sourceSchemaName != null ? sourceSchemaName + "." + sourceTableName
 			: sourceTableName;
-		final String query = "select * from " + qualifiedTableName;
-		source.getTemplate().query(new PreparedStatementCreator() {
-
-			@Override
-			public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-				return con.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			}
-		}, td);
+		source.query("select * from " + qualifiedTableName, td);
 		logger.info("Table " + qualifiedTableName + " copied: " + td.getRowsProcessed() + " datasets, "
 			+ (System.currentTimeMillis() - time) + " ms");
 		return td.getRowsProcessed();
@@ -51,7 +39,13 @@ public class TableCopier extends BaseCopier {
 	 * @return the number of datasets that have been inserted
 	 */
 	public int copyFromQuery(String sqlQuery, String targetTableName, String targetSchemaName, CopyTargetMode mode) {
-		return -1; // FIXME implement
+		final TableCopyTarget td = new DatabaseTableCopyTarget(target.getTemplate(), targetTableName, targetSchemaName,
+			mode, 100);
+		final long time = System.currentTimeMillis();
+		source.query(sqlQuery, td);
+		logger.info("Query copied to " + targetTableName + ": " + td.getRowsProcessed() + " datasets, "
+			+ (System.currentTimeMillis() - time) + " ms");
+		return td.getRowsProcessed();
 	}
 
 }
