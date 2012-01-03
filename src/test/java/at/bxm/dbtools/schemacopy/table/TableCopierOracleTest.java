@@ -46,7 +46,7 @@ public class TableCopierOracleTest extends TestBase {
 		// GIVEN: a non-empty source table and an empty target database
 		final int datasets = 210;
 		sourceDb = createTableWithData(USERNAME_SOURCE, datasets);
-		targetDb = createTable(USERNAME_TARGET);
+		targetDb = connect(USERNAME_TARGET);
 
 		// WHEN: copying only selected rows and columns
 		final int datasetsToCopy = 14;

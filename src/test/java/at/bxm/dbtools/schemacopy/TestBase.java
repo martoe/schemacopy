@@ -9,7 +9,6 @@ public class TestBase {
 
 	/**
 	 * Make sure the next test uses an empty database
-	 * FIXME if a test fails, @After is not executed (and then the follwing tests also fail)
 	 */
 	@After
 	public void cleanup() {
