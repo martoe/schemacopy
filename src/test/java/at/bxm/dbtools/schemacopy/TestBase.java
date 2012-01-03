@@ -7,7 +7,10 @@ public class TestBase {
 	protected Database sourceDb;
 	protected Database targetDb;
 
-	/** Make sure the next test uses an empty H2 database */
+	/**
+	 * Make sure the next test uses an empty database
+	 * FIXME if a test fails, @After is not executed (and then the follwing tests also fail)
+	 */
 	@After
 	public void cleanup() {
 		cleanup(sourceDb);

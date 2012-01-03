@@ -1,19 +1,10 @@
 package at.bxm.dbtools.schemacopy;
 
-import static org.junit.Assert.*;
-
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.BadSqlGrammarException;
-import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.jdbc.support.lob.DefaultLobHandler;
-import org.springframework.jdbc.support.lob.LobCreator;
 
 // preparing Oracle XE 11g:
 //
@@ -35,10 +26,10 @@ import org.springframework.jdbc.support.lob.LobCreator;
 public final class Oracle {
 
 	private static final Logger logger = LoggerFactory.getLogger(Oracle.class);
+	public static final String TABLE_NAME = DatabaseUtils.TABLE_NAME;
+	public static final String TABLE_COUNTQUERY = DatabaseUtils.TABLE_COUNTQUERY;
 	public static final String USERNAME_SOURCE = "sourcetest";
 	public static final String USERNAME_TARGET = "targettest";
-	public static final String TABLE_NAME = "testtable";
-	public static final String TABLE_COUNTQUERY = "select count(1) from " + TABLE_NAME;
 	public static final String SEQ_NAME = "seq_test";
 	public static final String SEQ_NEXTVALUE = "select " + SEQ_NAME + ".nextval from dual";
 
@@ -63,33 +54,9 @@ public final class Oracle {
 	}
 
 	public static Database createTableWithData(String databaseName, int datasets) {
-		Database datasource = createTable(databaseName);
-		final LobCreator lobCreator = new DefaultLobHandler().getLobCreator();
-		final PreparedStatementSetter pss = new PreparedStatementSetter() {
-			private int count = 0;
-
-			@Override
-			public void setValues(PreparedStatement ps) throws SQLException {
-				int i = 0;
-				ps.setInt(++i, ++count);
-				ps.setLong(++i, ++count);
-				ps.setString(++i, "some text");
-				ps.setDouble(++i, (double)count / 3);
-				ps.setDate(++i, new Date(System.currentTimeMillis()));
-				ps.setTimestamp(++i, new Timestamp(System.currentTimeMillis()));
-				lobCreator.setClobAsString(ps, ++i, "some very very long text");
-				lobCreator.setBlobAsBytes(ps, ++i, "some very big pile of bytes".getBytes());
-			}
-		};
-		for (int i = 0; i < datasets; i++) {
-			datasource.getTemplate().update(
-				"insert into " + TABLE_NAME
-					+ " (c_int, c_long, c_text, c_decimal, c_date, c_timestamp, c_clob, c_blob)" +
-					" values (?, ?, ?, ?, ?, ?, ?, ?)",
-				pss);
-		}
-		assertEquals(datasets, datasource.queryForLong(TABLE_COUNTQUERY));
-		return datasource;
+		Database database = createTable(databaseName);
+		DatabaseUtils.createTableData(database, datasets);
+		return database;
 	}
 
 	public static Database createSequence(String username, int start, int increment) {

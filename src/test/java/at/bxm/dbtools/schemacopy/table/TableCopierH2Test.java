@@ -3,6 +3,7 @@ package at.bxm.dbtools.schemacopy.table;
 import static at.bxm.dbtools.schemacopy.H2.*;
 import static org.junit.Assert.*;
 
+import at.bxm.dbtools.schemacopy.DatabaseUtils;
 import at.bxm.dbtools.schemacopy.SchemaCopyException;
 import at.bxm.dbtools.schemacopy.TestBase;
 import org.junit.Test;
@@ -82,7 +83,7 @@ public class TableCopierH2Test extends TestBase {
 		// THEN: target table contains only the selected rows and columns
 		assertEquals(datasetsToCopy, datasetsCopied);
 		assertEquals(datasetsToCopy, targetDb.queryForLong(TABLE_COUNTQUERY));
-		assertEquals(3, getColumnCount(targetDb, TABLE_NAME));
+		assertEquals(3, DatabaseUtils.getColumnCount(targetDb, TABLE_NAME));
 	}
 
 }

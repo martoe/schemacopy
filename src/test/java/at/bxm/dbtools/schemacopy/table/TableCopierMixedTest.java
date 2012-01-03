@@ -5,11 +5,6 @@ import static org.junit.Assert.*;
 import at.bxm.dbtools.schemacopy.H2;
 import at.bxm.dbtools.schemacopy.Oracle;
 import at.bxm.dbtools.schemacopy.TestBase;
-
-import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
-
-import at.bxm.dbtools.schemacopy.table.TableCopier;
-
 import org.junit.Test;
 
 /** Test the {@link TableCopier} class between H2 and Oracle databases */
@@ -62,7 +57,7 @@ public class TableCopierMixedTest extends TestBase {
 	}
 
 	@Test
-	public void copyFromH2ToOracle_create() { // FIXME
+	public void copyFromH2ToOracle_create() {
 		// GIVEN: a non-empty H2 table with LOBs and an empty Oracle database
 		final int datasets = 123;
 		sourceDb = H2.createTableWithData("source", 123);
