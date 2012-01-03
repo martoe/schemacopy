@@ -5,11 +5,6 @@ import static org.junit.Assert.*;
 
 import at.bxm.dbtools.schemacopy.SchemaCopyException;
 import at.bxm.dbtools.schemacopy.TestBase;
-
-import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
-
-import at.bxm.dbtools.schemacopy.table.TableCopier;
-
 import org.junit.Test;
 
 /** Test the {@link TableCopier} class for a H2 in-memory database */
@@ -24,7 +19,7 @@ public class TableCopierH2Test extends TestBase {
 
 		// WHEN: copying in "reuse" mode
 		TableCopier tc = new TableCopier(sourceDb, targetDb);
-		tc.copy("testtable", null, null, null, CopyTargetMode.REUSE);
+		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.REUSE);
 
 		// THEN: target table contains equal dataset count
 		assertEquals(datasets, targetDb.queryForLong(TABLE_COUNTQUERY));
@@ -39,7 +34,7 @@ public class TableCopierH2Test extends TestBase {
 
 		// WHEN: copying in "reuse" mode
 		TableCopier tc = new TableCopier(sourceDb, targetDb);
-		tc.copy("testtable", null, null, null, CopyTargetMode.CREATE);
+		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.CREATE);
 
 		// THEN: target table contains equal dataset count
 		assertEquals(datasets, targetDb.queryForLong(TABLE_COUNTQUERY));
@@ -53,7 +48,7 @@ public class TableCopierH2Test extends TestBase {
 
 		// WHEN: copying in "reuse" mode
 		TableCopier tc = new TableCopier(sourceDb, targetDb);
-		tc.copy("testtable", null, null, null, CopyTargetMode.REUSE);
+		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.REUSE);
 
 		// THEN: exception
 	}
@@ -66,9 +61,26 @@ public class TableCopierH2Test extends TestBase {
 
 		// WHEN: copying in "create" mode
 		TableCopier tc = new TableCopier(sourceDb, targetDb);
-		tc.copy("testtable", null, null, null, CopyTargetMode.CREATE);
+		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.CREATE);
 
 		// THEN: exception
+	}
+
+	@Test
+	public void copy_withQuery() {
+		// GIVEN: a non-empty source table and an empty target database
+		final int datasets = 210;
+		sourceDb = createTableWithData("source", datasets);
+		targetDb = createInMemoryDatabase("target");
+
+		// WHEN: copying only selected rows and columns
+		final int datasetsToCopy = 147;
+		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		tc.copyFromQuery("blabla", TABLE_NAME, null, CopyTargetMode.CREATE);
+
+		// THEN: target table contains only the selected rows and columns
+		assertEquals(datasetsToCopy, targetDb.queryForLong(TABLE_COUNTQUERY));
+		assertEquals(2, getColumnCount(targetDb, TABLE_NAME));
 	}
 
 }

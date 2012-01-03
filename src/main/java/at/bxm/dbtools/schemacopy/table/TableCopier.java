@@ -1,14 +1,12 @@
 package at.bxm.dbtools.schemacopy.table;
 
+import at.bxm.dbtools.schemacopy.BaseCopier;
+import at.bxm.dbtools.schemacopy.Database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import org.springframework.jdbc.core.PreparedStatementCreator;
-
-import at.bxm.dbtools.schemacopy.BaseCopier;
-import at.bxm.dbtools.schemacopy.Database;
 
 public class TableCopier extends BaseCopier {
 
@@ -22,7 +20,7 @@ public class TableCopier extends BaseCopier {
 	 * @param targetTableName (optional, defaults to "sourceTableName")
 	 * @param targetSchemaName (optional)
 	 * @param mode (required) 
-	 * @return the number of datasets that have been copied
+	 * @return the number of datasets that have been inserted
 	 */
 	public int copy(String sourceTableName, String sourceSchemaName, String targetTableName, String targetSchemaName,
 		CopyTargetMode mode) {
@@ -43,6 +41,17 @@ public class TableCopier extends BaseCopier {
 		logger.info("Table " + qualifiedTableName + " copied: " + td.getRowsProcessed() + " datasets, "
 			+ (System.currentTimeMillis() - time) + " ms");
 		return td.getRowsProcessed();
+	}
+
+	/**
+	 * @param sqlQuery (required)
+	 * @param targetTableName (required)
+	 * @param targetSchemaName (optional)
+	 * @param mode (required) 
+	 * @return the number of datasets that have been inserted
+	 */
+	public int copyFromQuery(String sqlQuery, String targetTableName, String targetSchemaName, CopyTargetMode mode) {
+		return -1; // FIXME implement
 	}
 
 }

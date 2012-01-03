@@ -14,7 +14,8 @@ import org.springframework.jdbc.support.lob.LobCreator;
 
 public final class H2 {
 
-	public static final String TABLE_COUNTQUERY = "select count(1) from testtable";
+	public static final String TABLE_NAME = "testtable";
+	public static final String TABLE_COUNTQUERY = "select count(1) from " + TABLE_NAME;
 	public static final String SEQ_NAME = "seq_test";
 	public static final String SEQ_NEXTVALUE = "select next value for " + SEQ_NAME;
 
@@ -26,9 +27,10 @@ public final class H2 {
 		return new Database(datasource, Dialect.H2, null);
 	}
 
+	/** create a table that contains all supported datatypes */
 	public static Database createTable(String databaseName) {
 		Database database = createInMemoryDatabase(databaseName);
-		database.execute("create table testtable(" +
+		database.execute("create table " + TABLE_NAME + "(" +
 			"c_int integer not null, " +
 			"c_long long not null, " +
 			"c_text varchar(100) not null, " +
@@ -62,7 +64,7 @@ public final class H2 {
 		};
 		for (int i = 0; i < datasets; i++) {
 			datasource.getTemplate().update(
-				"insert into testtable (c_int, c_long, c_text, c_decimal, c_date, c_timestamp, c_clob, c_blob)" +
+				"insert into " + TABLE_NAME + " (c_int, c_long, c_text, c_decimal, c_date, c_timestamp, c_clob, c_blob)" +
 					" values (?, ?, ?, ?, ?, ?, ?, ?)",
 				pss);
 		}
@@ -75,6 +77,10 @@ public final class H2 {
 		database.execute("create sequence " + SEQ_NAME + " start with " + start + " increment by " + increment);
 		assertEquals(start, database.queryForLong(SEQ_NEXTVALUE)); // move the sequence to the start value
 		return database;
+	}
+
+	public static int getColumnCount(Database database, String tableName) {
+		return -1; // FIXME implement
 	}
 
 }
