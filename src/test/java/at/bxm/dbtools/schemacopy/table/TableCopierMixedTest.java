@@ -19,7 +19,7 @@ public class TableCopierMixedTest extends TestBase {
 		targetDb = H2.createTable("target");
 
 		// WHEN: copying
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(Oracle.TABLE_NAME, null, null, null, CopyTargetMode.REUSE);
 
 		// THEN: target table contains equal dataset count
@@ -34,7 +34,7 @@ public class TableCopierMixedTest extends TestBase {
 		targetDb = H2.createInMemoryDatabase("target");
 
 		// WHEN: copying
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(Oracle.TABLE_NAME, null, null, null, CopyTargetMode.CREATE);
 
 		// THEN: target table contains equal dataset count
@@ -49,7 +49,7 @@ public class TableCopierMixedTest extends TestBase {
 		targetDb = Oracle.createTable(Oracle.USERNAME_TARGET);
 
 		// WHEN: copying
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(Oracle.TABLE_NAME, null, null, null, CopyTargetMode.REUSE);
 
 		// THEN: target table contains equal dataset count
@@ -64,7 +64,7 @@ public class TableCopierMixedTest extends TestBase {
 		targetDb = Oracle.connect(Oracle.USERNAME_TARGET);
 
 		// WHEN: copying
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(Oracle.TABLE_NAME, null, null, null, CopyTargetMode.CREATE);
 
 		// THEN: target table contains equal dataset count

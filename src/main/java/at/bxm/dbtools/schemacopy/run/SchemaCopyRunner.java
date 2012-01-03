@@ -1,5 +1,11 @@
 package at.bxm.dbtools.schemacopy.run;
 
+import at.bxm.dbtools.schemacopy.Database;
+import at.bxm.dbtools.schemacopy.Dialect;
+import at.bxm.dbtools.schemacopy.SchemaCopyException;
+import at.bxm.dbtools.schemacopy.sequence.SequenceAdjuster;
+import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
+import at.bxm.dbtools.schemacopy.table.TableCopier;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,24 +16,17 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Properties;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-
-import at.bxm.dbtools.schemacopy.Database;
-import at.bxm.dbtools.schemacopy.Dialect;
-import at.bxm.dbtools.schemacopy.SchemaCopyException;
-import at.bxm.dbtools.schemacopy.sequence.SequenceAdjuster;
-import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
-import at.bxm.dbtools.schemacopy.table.TableCopier;
 
 public class SchemaCopyRunner {
 
 	private static final Logger logger = LoggerFactory.getLogger(SchemaCopyRunner.class);
 	private Database source;
 	private Database target;
+	private int batchsize = 100;
 	private String csvDataResource;
 	private String csvData;
 
@@ -47,8 +46,12 @@ public class SchemaCopyRunner {
 		csvDataResource = value;
 	}
 
+	public void setBatchsize(int value) {
+		batchsize = value;
+	}
+
 	public void copy(CopyTargetMode mode) {
-		TableCopier tc = new TableCopier(source, target);
+		TableCopier tc = new TableCopier(source, target, batchsize);
 		SequenceAdjuster sa = new SequenceAdjuster(source, target);
 		String line;
 		BufferedReader in = null;
@@ -101,6 +104,10 @@ public class SchemaCopyRunner {
 				Dialect.valueOf(p.getProperty("schemacopy.target.dialect").toUpperCase()),
 				p.getProperty("schemacopy.target.schemaname")));
 			scr.setCsvDataResource(p.getProperty("schemacopy.datafile"));
+			String batchsize = StringUtils.trimToNull(p.getProperty("schemacopy.batchsize"));
+			if (batchsize != null) {
+				scr.setBatchsize(Integer.parseInt(batchsize));
+			}
 			scr.copy(CopyTargetMode.valueOf(p.getProperty("schemacopy.copymode").toUpperCase()));
 		} finally {
 			if (is != null) {

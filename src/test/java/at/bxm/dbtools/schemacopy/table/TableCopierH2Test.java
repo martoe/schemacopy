@@ -19,7 +19,7 @@ public class TableCopierH2Test extends TestBase {
 		targetDb = createTable("target");
 
 		// WHEN: copying in "reuse" mode
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.REUSE);
 
 		// THEN: target table contains equal dataset count
@@ -34,7 +34,7 @@ public class TableCopierH2Test extends TestBase {
 		targetDb = createInMemoryDatabase("target");
 
 		// WHEN: copying in "reuse" mode
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.CREATE);
 
 		// THEN: target table contains equal dataset count
@@ -48,7 +48,7 @@ public class TableCopierH2Test extends TestBase {
 		targetDb = createInMemoryDatabase("target");
 
 		// WHEN: copying in "reuse" mode
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.REUSE);
 
 		// THEN: exception
@@ -61,7 +61,7 @@ public class TableCopierH2Test extends TestBase {
 		targetDb = createTable("target");
 
 		// WHEN: copying in "create" mode
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.CREATE);
 
 		// THEN: exception
@@ -76,7 +76,7 @@ public class TableCopierH2Test extends TestBase {
 
 		// WHEN: copying only selected rows and columns
 		final int datasetsToCopy = 147;
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		int datasetsCopied = tc.copyFromQuery("select c_int, c_timestamp, c_blob from " + TABLE_NAME + " where c_int<="
 			+ datasetsToCopy, TABLE_NAME, null, CopyTargetMode.CREATE);
 

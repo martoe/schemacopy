@@ -1,12 +1,18 @@
 package at.bxm.dbtools.schemacopy.table;
 
+import static at.bxm.dbtools.schemacopy.ArgumentChecker.*;
+
 import at.bxm.dbtools.schemacopy.BaseCopier;
 import at.bxm.dbtools.schemacopy.Database;
 
 public class TableCopier extends BaseCopier {
 
-	public TableCopier(Database source, Database target) {
+	private final int batchsize;
+
+	public TableCopier(Database source, Database target, int batchsize) {
 		super(source, target);
+		checkGreaterThan(batchsize, 0, "batchsize");
+		this.batchsize = batchsize;
 	}
 
 	/**
@@ -21,7 +27,7 @@ public class TableCopier extends BaseCopier {
 		CopyTargetMode mode) {
 		final TableCopyTarget td = new DatabaseTableCopyTarget(target.getTemplate(),
 			targetTableName != null ? targetTableName : sourceTableName,
-			targetSchemaName, mode, 100); // TODO batchsize konfigurierbar
+			targetSchemaName, mode, batchsize);
 		final long time = System.currentTimeMillis();
 		final String qualifiedTableName = sourceSchemaName != null ? sourceSchemaName + "." + sourceTableName
 			: sourceTableName;
@@ -40,7 +46,7 @@ public class TableCopier extends BaseCopier {
 	 */
 	public int copyFromQuery(String sqlQuery, String targetTableName, String targetSchemaName, CopyTargetMode mode) {
 		final TableCopyTarget td = new DatabaseTableCopyTarget(target.getTemplate(), targetTableName, targetSchemaName,
-			mode, 100);
+			mode, batchsize);
 		final long time = System.currentTimeMillis();
 		source.query(sqlQuery, td);
 		logger.info("Query copied to " + targetTableName + ": " + td.getRowsProcessed() + " datasets, "

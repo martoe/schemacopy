@@ -19,7 +19,7 @@ public class TableCopierOracleTest extends TestBase {
 		targetDb = connect(USERNAME_TARGET);
 
 		// WHEN: copying
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.CREATE);
 
 		// THEN: target table contains equal dataset count
@@ -34,7 +34,7 @@ public class TableCopierOracleTest extends TestBase {
 		targetDb = createTable(USERNAME_TARGET);
 
 		// WHEN: copying
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		tc.copy(TABLE_NAME, null, null, null, CopyTargetMode.REUSE);
 
 		// THEN: target table contains equal dataset count
@@ -50,7 +50,7 @@ public class TableCopierOracleTest extends TestBase {
 
 		// WHEN: copying only selected rows and columns
 		final int datasetsToCopy = 14;
-		TableCopier tc = new TableCopier(sourceDb, targetDb);
+		TableCopier tc = new TableCopier(sourceDb, targetDb, 100);
 		int datasetsCopied = tc.copyFromQuery("select c_decimal, c_date from " + TABLE_NAME + " where c_int<="
 			+ datasetsToCopy, TABLE_NAME, null, CopyTargetMode.CREATE);
 
