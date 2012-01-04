@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import at.bxm.dbtools.schemacopy.Database;
+import at.bxm.dbtools.schemacopy.DatabaseUtils;
 import at.bxm.dbtools.schemacopy.Dialect;
 import at.bxm.dbtools.schemacopy.H2;
 import at.bxm.dbtools.schemacopy.TestBase;
@@ -26,13 +27,14 @@ public class SchemaCopyRunnerTest extends TestBase {
 		// GIVEN: a non-empty source table and an empty target table
 		final int datasets = 1111;
 		sourceDb = H2.createTableWithData("source", datasets);
-		targetDb = H2.createTable("target");
+		targetDb = H2.createInMemoryDatabase("target");
 
 		// WHEN: executing the programm
 		SchemaCopyRunner.main(new String[] { "schemacopy.properties" });
 
-		// THEN: target table contains datasets
+		// THEN: target table contains a single column and all datasets
 		assertEquals(datasets, targetDb.queryForLong(H2.TABLE_COUNTQUERY));
+		assertEquals(DatabaseUtils.getColumnCount(targetDb, H2.TABLE_NAME), 1);
 	}
 
 	@Test

@@ -1,11 +1,5 @@
 package at.bxm.dbtools.schemacopy.run;
 
-import at.bxm.dbtools.schemacopy.Database;
-import at.bxm.dbtools.schemacopy.Dialect;
-import at.bxm.dbtools.schemacopy.SchemaCopyException;
-import at.bxm.dbtools.schemacopy.sequence.SequenceAdjuster;
-import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
-import at.bxm.dbtools.schemacopy.table.TableCopier;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,10 +10,18 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Properties;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import at.bxm.dbtools.schemacopy.Database;
+import at.bxm.dbtools.schemacopy.Dialect;
+import at.bxm.dbtools.schemacopy.SchemaCopyException;
+import at.bxm.dbtools.schemacopy.sequence.SequenceAdjuster;
+import at.bxm.dbtools.schemacopy.table.CopyTargetMode;
+import at.bxm.dbtools.schemacopy.table.TableCopier;
 
 public class SchemaCopyRunner {
 
@@ -60,8 +62,14 @@ public class SchemaCopyRunner {
 			while ((line = in.readLine()) != null) {
 				if (!line.startsWith("#")) {
 					String[] tokens = line.split(";");
-					tc.copy(tokens[0], source.getSchemaName(), null, target.getSchemaName(), mode);
-					for (int i = 1; i < tokens.length; i++) {
+					String tablename = tokens[0];
+					String query = tokens.length > 1 ? StringUtils.trimToNull(tokens[1]) : null;
+					if (query != null) {
+						tc.copyFromQuery(query, tablename, target.getSchemaName(), mode);
+					} else {
+						tc.copy(tablename, source.getSchemaName(), tablename, target.getSchemaName(), mode);
+					}
+					for (int i = 2; i < tokens.length; i++) {
 						if (StringUtils.isNotBlank(tokens[i])) {
 							sa.adjust(tokens[i], source.getSchemaName(), target.getSchemaName());
 						}
