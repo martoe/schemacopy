@@ -8,7 +8,7 @@
 		</layout>
 	</appender>
 	<appender name="file" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="debug.log"/>
+		<param name="File" value="schemacopy.log"/>
 		<param name="Append" value="false"/>
 		<param name="MaxFileSize" value="10MB"/>
 		<param name="MaxBackupIndex" value="10"/>
@@ -16,11 +16,9 @@
     		<param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-5p %c{1}: %m%n"/>
 		</layout>
 	</appender>
-	<logger name="at.bxm.dbtools">
-		<level value="debug"/>
-	</logger>
+	<logger name="at.bxm.dbtools"><level value="info"/></logger>
 	<!-- SQL tracing: -->
-	<logger name="org.springframework.jdbc.core.JdbcTemplate"><level value="debug"/></logger>
+	<!--logger name="org.springframework.jdbc.core.JdbcTemplate"><level value="debug"/></logger-->
 	<root>
 		<level value="warn"/>
 		<appender-ref ref="console"/>
