@@ -57,6 +57,8 @@ public class SchemaCopyRunner {
 		SequenceAdjuster sa = new SequenceAdjuster(source, target);
 		String line;
 		BufferedReader in = null;
+		long startTime = System.currentTimeMillis();
+		int count = 0;
 		try {
 			in = new BufferedReader(getCsvDataReader());
 			while ((line = in.readLine()) != null) {
@@ -74,11 +76,13 @@ public class SchemaCopyRunner {
 							sa.adjust(tokens[i], source.getSchemaName(), target.getSchemaName());
 						}
 					}
+					count++;
 				}
 			}
 		} catch (IOException e) {
 			throw new SchemaCopyException("Could not read CSV data", e);
 		} finally {
+			logger.info(count + " tables processed, " + (System.currentTimeMillis() - startTime) + " ms");
 			if (in != null) {
 				try {
 					in.close();
