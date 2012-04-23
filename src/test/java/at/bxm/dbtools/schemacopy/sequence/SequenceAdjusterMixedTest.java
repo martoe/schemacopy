@@ -9,7 +9,9 @@ import at.bxm.dbtools.schemacopy.TestBase;
 import at.bxm.dbtools.schemacopy.sequence.SequenceAdjuster;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(Oracle.class)
 public class SequenceAdjusterMixedTest extends TestBase {
 
 	@Test

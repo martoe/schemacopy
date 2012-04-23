@@ -4,10 +4,13 @@ import static at.bxm.dbtools.schemacopy.Oracle.*;
 import static org.junit.Assert.*;
 
 import at.bxm.dbtools.schemacopy.DatabaseUtils;
+import at.bxm.dbtools.schemacopy.Oracle;
 import at.bxm.dbtools.schemacopy.TestBase;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /** Test the {@link TableCopier} class for an Oracle database */
+@Category(Oracle.class)
 public class TableCopierOracleTest extends TestBase {
 
 	//	create user targettest identified by test;

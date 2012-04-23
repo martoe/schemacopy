@@ -6,8 +6,10 @@ import at.bxm.dbtools.schemacopy.H2;
 import at.bxm.dbtools.schemacopy.Oracle;
 import at.bxm.dbtools.schemacopy.TestBase;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /** Test the {@link TableCopier} class between H2 and Oracle databases */
+@Category(Oracle.class)
 public class TableCopierMixedTest extends TestBase {
 
 	//	create user targettest identified by test;
